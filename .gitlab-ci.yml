@@ -5,9 +5,6 @@ stages:
   - test
   - deploy
 
-before_script:
-  - pip install twine
-
 build:
   stage: build
   script:
@@ -25,5 +22,6 @@ deploy_test_pypi:
     TWINE_USERNAME: $PRODUCTION_USERNAME
     TWINE_PASSWORD: $PRODUCTION_PASSWORD
   script:
+    - pip install twine
     - twine upload --repository testpypi dist/* 
     
