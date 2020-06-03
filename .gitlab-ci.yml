@@ -3,8 +3,22 @@ include:
   - template: Code-Quality.gitlab-ci.yml
 
 code_quality:
+  image: docker:stable
   variables:
-    CODE_QUALITY_IMAGE: "registry.example.com/codequality-fork:latest"
+    DOCKER_DRIVER: overlay2
+    SP_VERSION: 0.85.6
+  allow_failure: true
+  services:
+    - docker:stable-dind
+  script:
+    - docker run
+        --env SOURCE_CODE="$PWD"
+        --volume "$PWD":/code
+        --volume /var/run/docker.sock:/var/run/docker.sock
+        "registry.gitlab.com/gitlab-org/ci-cd/codequality:$SP_VERSION" /code
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
 
 stages:
   - build
