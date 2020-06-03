@@ -1,4 +1,10 @@
 image: python:3.6
+include:
+  - template: Code-Quality.gitlab-ci.yml
+
+code_quality:
+  variables:
+    CODE_QUALITY_IMAGE: "registry.example.com/codequality-fork:latest"
 
 stages:
   - build
@@ -9,6 +15,9 @@ build:
   stage: build
   script:
     - python setup.py sdist bdist_wheel
+  artifacts:
+    paths:
+      - dist/*
 
 
 test:
