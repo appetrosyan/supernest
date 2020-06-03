@@ -1,6 +1,6 @@
 """Setup code for the SSPR Package"""
 import setuptools
-import os.environ as env
+import os
 
 SHORT_DESCRIPTION = 'A wrapper for use of SSPR in \
 nested sampling packages such as PolyChord and Multinest'
@@ -9,10 +9,10 @@ LONG_DESCRIPTION = SHORT_DESCRIPTION
 with open("./README.md") as readme:
     LONG_DESCRIPTION = readme.read()
 
-if env.get('CI_COMMIT_TAG'):
-    ver = env['CI_COMMIT_TAG']
+if os.environ.get('CI_COMMIT_TAG'):
+    ver = os.environ['CI_COMMIT_TAG']
 else:
-    ver = env['CI_JOB_ID']
+    ver = os.environ['CI_JOB_ID']
 
 setuptools.setup(
     name='super-nest-a-p-petrosyan',
