@@ -1,11 +1,15 @@
 stages:
   - build
   - test
+  - deploy
 
+before_script:
+  - pip install twine
+    
 build:
   stage: build
   script:
-    - echo "Building"
+    - python setup.py sdist bdist_wheel 
 
 
 test:
@@ -13,4 +17,11 @@ test:
   script:
     - echo "testing"
 
+deploy_test_pypi:
+  stage: deploy
+  variables:
+    TWINE_USERNAME: $PRODUCTION_USERNAME
+    TWINE_PASSWORD: $PRODUCTION_PASSWORD
+  script:
+    - twine upload --repository testpypi dist/* 
     

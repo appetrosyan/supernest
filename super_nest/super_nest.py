@@ -1,4 +1,4 @@
 
 
-def nested_sample():
-    pass
+def nested_sample(*args, **kwargs):
+    
