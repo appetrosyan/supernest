@@ -39,7 +39,7 @@ test:
   script:
     - echo "testing"
 
-deploy_test_pypi:
+deploy_to_test_pypi:
   stage: deploy
   variables:
     TWINE_USERNAME: $PRODUCTION_USERNAME
