@@ -33,71 +33,177 @@ You also need to have either
 installed.
 # Usage
 
+This is planned as a simple convenient package that you use with a sampler. 
 
-## Models and settings 
-### Wrappers
-This package comes with thin wrappers around ``PolyChord`` and
-``MultiNest``.  Effort was put in, so that using our work is as easy
-as can be.
+Suppose that you had a set-up with `PolyChord` that involved a prior
+quantile `prior` a log-likelihood function, `loglike` all of which
+operated on an `nDims` dimensional space. 
 
-To get started, just `import super_nest.wrappers.polychord as sspc`
-and replace every instance of `polychord.run_polychord()` with
-`sspc.run_polychord()`.  This will give you effectively the same API
-as PolyChord (up to a search and replace), but with extra features.
+Often you'd be using a uniform prior. You're sure that using a
+different prior would cause an imprint, which is fine if that prior
+was based on a previous run, but not so if you just used it as a
+hunch. As hunch is used liberally here, you could have an intuition,
+or you could have done a run using a different model and extrapolated
+the posterior. 
 
-### Base model
-If you're writing new code, you should subclass the
-``super_nest.models.BaseModel``, by implemeting a prior ``quantile`` a
-``log_likelihood`` and as many ``proposals`` as you see fit. More on
-that later.
+Previously all such information could not be used. Nested sampling
+would return all of that information to you and you wouldn't be able
+to tell, if this is actually what the data suggests, or that you
+simply gave it too much info out of thin air.
 
+Well, now you can use that information and get your sampling to run
+faster, but to produce the output you would have gotten had you used a
+uniform prior (and a lot more live points).
 
-## Defining proposals
-A proposal can be defined in many ways, currently, the hardest way
-that offers the best performance is to define a proposal directly, by
-specifying its prior quantile and likelihood, (see paper (TODO) on how
-to do that).
-
-99% of all inferences with nested sampling use a uniform prior, and
-likely use a correlated Gaussian to communicate the proposal
-distribution. This case can be easily specified:
-
+## General overview.
+Suppose you had a unfirom prior `pi` and likelihood `l`. To use them
+in nested sampling, you need a prior quantile, and the logarithm of
+the likelihood. You need to pass both to the sampler, e.g.
+```
+settings= PolyChordSettings(nDims, nDerived, ...)
+run_polychord(log(l), functional_inverse(cumulative_dist(pi)), nDims,
+nDerived ...)  
 ``` 
-from super_nest.proposals import UniGaussian 
+if the prior is uniform (a function that maps to a
+constant), you expect the quantile to be dependent on the boundaries
+of your prior space. If you have a box with corners at `a` and `b`,
+then the uniform prior quantile is:
+```
+def quantile(cube):
+	return a + (b-a)*cube
+```
+
+Let's say you have a hunch that the posterior would be a Gaussian at
+`mu` with covariance matrix `Sigma`. How do you formulate it in such a
+way that supernest can understand?
+
+Well, for starters, the prior quantile would look like
+```
+def gaussian_quantile(cube):
+	def _erf_term(d, g):
+			return erf(d * sqrt(1 / 2) / g)
+	sigma = diag(m.cov)
+    da = _erf_term(a - mu, sigma)
+    db = _erf_term(b - mu, sigma)
+    ret = erfinv((1 - cube) * da + cube * db)
+    return mu + sqrt(2 / beta) * sigma * ret
+```
+which is already quite a mouthful. If you tried to use this quantile directly, you would have a few problems:
+
+1) Your posterior will have a Gaussian imprint at `mu` and `Sigma`,
+whether or not you want it.
+2) If most of your posterior is far away, it would have been picked up by the uniform prior, but not the one you
+have.
+3) You would get the wrong (larger) evidence than you would with a uniform prior. 
+
+So what do you do?
+
+## Creating a proposal. 
+
+You create a consistent proposal. This means that you need to change the likelihood specifically, you need to make it so that the product of the prior pdf and the new likelihood is the same as the original uniform prior times the original `log(l)`. 
+
+So what do you do for a Gaussian? Well, it's easy:
+
+```
+def logl_gaussian(theta):
+	ll=0
+	def ln_z(t, b):
+        ret = - b * (t - mu) ** 2 / 2 / sigma ** 2
+        ret -= log(pi * sigma ** 2 / 2 / b) / 2
+        db = _erf_term(b - mu, sigma)
+        da = _erf_term(a - mu, sigma)
+        ret -= log(db - da)
+        return ret
+		
+	ll -= log(b-a).sum()
+    ll -= ln_z(theta, beta).sum()
+
+    return ll
+```
+
+And then you pass it and it works? **Wrong**. This will help you with
+the wrong evidence, but you would still get an imprint in the
+posterior, and sampling far away would still be an issue.
+
+## Using this package. 
+To solve the problem you need to put both your original prior and
+likelihood and the newly created gaussian proposa. into a
+superposition. This what this package does, and this is what this package is. 
+
+So to use the things that we've defined previously, we should do the
+following: (I'm assuming polyChord, but this works with **any** nested
+sampler).
+
+```
+from polychord import run_polychord
+from polychord.settings import PolyChordSettings
+from supernest import superimpose
+
+
+def uniform_quantile(cube):
+	...
+	
+	
+def uniform_like(theta):
+	...
+	return log(l), derived
+	
+	
+def gaussian_quantile(cube):
+	...
+	
+
+# In later versions, you will have a function that generates the correctsion for you. 
+def gaussian_like(theta):
+    ...
+	
+# Note taht you can have as many proposals as you like. 
+n_dims, prior, log_like = superimpose([(uniform_prior, uniform_like), (gaussian_prior, gaussian_like), ...], nDims)
 
 ...
-def prior(cube):
-    ...
-    
-def log_likelihood(theta):
-    ...
-    
-proposal = UniGaussian(prior, log_likelihood, mu, cov)
-sspc.run_polychord(..., proposal=proposal)
+
+# Be wary of using grade_dims and grade_frac. If you have n models, you should 
+# grade_dims.append(n)
+# grade_frac.append([1.0]*n)
+# before passing them to settings. 
+
+settings = PolyChordSettings(n_dims,nDerived, ...)
+
+...
+
+run_polychord(prior, n_dims, nDerived, log_like, ...)
 ```
- 
-or if you're not using a wrapper,
+## What do I get in return for my work?
 
+A run-time reduction starting at 37x. A precision increase of about
+100x. The posterior you get should contain all the usual stuff, plus
+some extra parameters at the end, which tell you how good your
+proposals were. These should be interpreted as probabilities that the
+proposal described the posterior.
+
+## Is this the best that superpositional mixtures have to offer. 
+
+Not at all. We're writing a purpose built sampler that eliminates all
+outward appearances of using superposition under the hood, while also
+making use of some clever tricks, that you normally can't
+do. Effectively we're creating a quantum computer of nested samplers.
+
+# Does this support the X sampler. 
+Yes. This is a very thin module, and while I have assumed a
+`PolyChord`-like calling convention (also `dynesty`), you can use it
+with other samplers that support using python functions as callbacks.
+
+## Pymultinest
+Very similar to PolyChord, (and also quite popular). Use as follows:
 ```
-import super_nest
+from super_nest import superimpose
 
-super_nest.nested_sample(model, proposal=proposal, sampler='PolyChord')
-```
-## Backends
-The sampler will be chosen automatically depending on the settings,
-e.g. for higher number of dimensions it would be faster than
-MultiNest, because the average case time complexity of MultiNest is
-exponential, while PolyChord's is polynomial. However, if you need to
-force the use of a particular sampler, just use the variable sampler.
-
-This is true even if you're using the wrappers. By default the sampler
-whose API is used is being preferred, but you can just as well use
-
-``` 
-super_nest.run_polychord(..., sampler='MultiNest')
+n_dims, my_prior_quantile, my_likelihood = superimpose([(prior1, like1), (proposal_prior1, proposal_like1)], nDims)
+solve(LogLikelihood= my_likelihood, Prior= my_prior_quantile, n_dims = n_dims)
 ```
 
-to retain the settings, but use a different sampler.  
+## dynesty
+
 
 # What is this useful for 
 
@@ -128,42 +234,5 @@ often do in nested sampling) and used the posterior chains to generate
 the distribution.
 
 
-# License (WIP)
-The program is dual licensed, the version here is: 
+# License - MIT
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-    
-Basically, you can use it, give it to anyone you want, and modify to
-your heart's content, as long as you give credit and don't narrow the
-license. You also shouldn't link against proprietary licensed software
-downstream. For example, you can safely run this on a Scientific
-Linux-running cluster, as long as you avoid programs that were
-compiled with intel's compilers. By choosing to use this library you
-get a speedup of about 2,000% so I would strongly encourage you to
-make the effort to use FOSS libraries. You can technically pass the
-information to a proprietary program if you really need to without
-violating GPLv3 as long as you don't dynamically link it against our
-code.
-
-Unfortunately, because MultiNest is not OpenSource, you cannot use
-sspr with MultiNest as a backend. Our API is flexible enough to
-default to PolyChord as a back-end and you don't need a rewrite on the
-front-end. In fact, if you wanted to try PolyChord, but were unable to
-because your code is for multinest, now you can do it.
-
-The other license is commercial. If you absolutely need to use some
-proprietary software downstream, we do have a license under different
-terms. Please contact me directly at a-p-petrosyan@yandex.ru. This
-will allow you to, for example, use MultiNest as a back-end as well as
-a front-end.
