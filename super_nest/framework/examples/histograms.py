@@ -1,15 +1,13 @@
 import matplotlib.pyplot as plt
 import tikzplotlib
 from matplotlib import rc
-from mpi4py import MPI
+# from mpi4py import MPI
 from numpy import array, sqrt, exp, pi, linspace
 
-from gaussian_models.power_posterior import PowerPosteriorPrior
-from gaussian_models.true_gaussian import GaussianPeakedPrior
-from gaussian_models.uniform import BoxUniformModel, StrawManResizeablePrior
-from general_mixture_model import StochasticMixtureModel
+from super_nest.framework.gaussian_models import (
+    PowerPosteriorPrior, BoxUniformPrior, GaussianPeakedPrior, ResizeablePrior)
+from super_nest.framework.mixtures import StochasticMixtureModel
 
-print(MPI)
 rc('font', **{'family': 'serif', 'serif': ['Times']})
 rc('text', usetex=True)
 plt.rcParams["font.size"] = 14
@@ -29,8 +27,8 @@ kwargs = {
 ppr_arr_bounds = PowerPosteriorPrior(arr_bounds, mu, cov, file_root='ppr_arr_bounds')
 ppr = PowerPosteriorPrior(*args, file_root='ppr')
 tgd = GaussianPeakedPrior(*args, file_root='tgd')
-bun = BoxUniformModel(*args, file_root='bun')
-run = StrawManResizeablePrior(*args, file_root='run')
+bun = BoxUniformPrior(*args, file_root='bun')
+run = ResizeablePrior(*args, file_root='run')
 
 mix = StochasticMixtureModel([bun, tgd], file_root='mix')
 

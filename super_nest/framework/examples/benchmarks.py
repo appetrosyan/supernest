@@ -2,17 +2,21 @@ import matplotlib.pyplot as plt
 import tikzplotlib
 from matplotlib import rc
 from numpy import array, mean, std
-from mpi4py import MPI
-from gaussian_models.power_posterior import PowerPosteriorPrior
-from gaussian_models.true_gaussian import GaussianPeakedPrior
-from gaussian_models.uniform import BoxUniformModel
-from general_mixture_model import StochasticMixtureModel
+
+# Uncomment if you have MPI installed
+# from mpi4py import MPI
+# print(MPI)
+
+from super_nest.framework.gaussian_models import (PowerPosteriorPrior,
+                                                  GaussianPeakedPrior,
+                                                  BoxUniformPrior)
+from super_nest.framework.mixtures import StochasticMixtureModel
+from super_nest.framework.offset_model import OffsetModel
+
 from misc.data_series import Series
 from misc.parallelism import parmap
 from misc.ui import progressbar as tqdm
-from offset_model import OffsetModel
 
-print(MPI)
 rc('font', **{'family': 'serif', 'serif': ['Times']})
 rc('text', usetex=True)
 plt.rcParams["font.size"] = 14
@@ -24,10 +28,10 @@ cov = array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 args = [bounds, mu, cov]
 
 coincidingSeries = {
-    'uniform': Series(BoxUniformModel(*args), '.', r'$U$'),
+    'uniform': Series(BoxUniformPrior(*args), '.', r'$U$'),
     'ppr': Series(PowerPosteriorPrior(*args), '+', r'$PPR$'),
     'mix': Series(StochasticMixtureModel(
-        [BoxUniformModel(*args),
+        [BoxUniformPrior(*args),
          GaussianPeakedPrior(*args)]), 'x', r'mix\((U, G)\)'),
     'gauss': Series(GaussianPeakedPrior(*args), 'o', r'$G$')
 }
@@ -67,7 +71,8 @@ def compare(runs, n_like, series):
         y_err = array([std(x) for x in runs[k]])
         print('x={}, y={}, y_err={}'.format(x_data, y_data, y_err))
         plt.errorbar(x_data, y_data, y_err,
-                     label=series[k].label, marker=series[k].style, markersize=8)
+                     label=series[k].label, marker=series[k].style,
+                     markersize=8)
     plt.xlabel(r'\(n_{live}\)')
     plt.ylabel(r'\# of \({\cal L}\) evaluations')
     plt.legend()

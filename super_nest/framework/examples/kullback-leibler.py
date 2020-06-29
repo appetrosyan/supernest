@@ -3,10 +3,9 @@ import tikzplotlib
 from matplotlib import rc
 from numpy import array, mean, std, polyfit, concatenate, polyval, linspace, diag, sqrt
 from mpi4py import MPI
-from gaussian_models.power_posterior import PowerPosteriorPrior
-from gaussian_models.true_gaussian import GaussianPeakedPrior
-from gaussian_models.uniform import BoxUniformModel
-from general_mixture_model import StochasticMixtureModel
+from super_nest.framework.gaussian_models import (
+    PowerPosteriorPrior, BoxUniformPrior, GaussianPeakedPrior, ResizeablePrior)
+from super_nest.framework.mixtures import StochasticMixtureModel
 from misc.data_series import Series
 from misc.parallelism import parmap
 from misc.ui import progressbar as tqdm
@@ -24,10 +23,10 @@ cov = array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
 args = [bounds, mu, cov]
 
 coincidingSeries = {
-    'uniform': Series(BoxUniformModel(*args), '.', r'$U$'),
+    'uniform': Series(BoxUniformPrior(*args), '.', r'$U$'),
     'ppr': Series(PowerPosteriorPrior(*args), '+', r'$PPR$'),
     'mix': Series(StochasticMixtureModel(
-        [BoxUniformModel(*args),
+        [BoxUniformPrior(*args),
          GaussianPeakedPrior(*args)]), 'x', r'mix\((U, G)\)')
 }
 

@@ -1,7 +1,6 @@
 from numpy import array, diag
 
-from gaussian_models.power_posterior import PowerPosteriorPrior
-from gaussian_models.uniform import BoxUniformModel
+from super_nest.framework.gaussian_models import PowerPosteriorPrior, BoxUniformPrior
 
 mu = array([1, 2, 3])
 cov = diag([1, 1, 1])
@@ -15,7 +14,7 @@ kwargs = {
 }
 
 models = {
-    'uniform': BoxUniformModel(*args),
+    'uniform': BoxUniformPrior(*args),
     'ppr': PowerPosteriorPrior(*args)
 }
 

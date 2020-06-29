@@ -2,12 +2,10 @@ import matplotlib.pyplot as plt
 from nestcheck.data_processing import batch_process_data, process_polychord_run
 from nestcheck.plots import param_logx_diagram
 from numpy import array
-from mpi4py import MPI
-from gaussian_models.power_posterior import PowerPosteriorPrior
-from gaussian_models.uniform import BoxUniformModel
-from general_mixture_model import StochasticMixtureModel
+# from mpi4py import MPI
+from super_nest.framework.gaussian_models import PowerPosteriorPrior, BoxUniformPrior
+from super_nest.framework.mixtures import StochasticMixtureModel
 
-print(MPI)
 b = 10 ** 2
 a = array([-b, -b, -b])
 bounds = (a, -a)
@@ -21,9 +19,9 @@ kwargs = {
 
 models = {
     'ppr': PowerPosteriorPrior(*args),
-    'uniform': BoxUniformModel(*args)
+    'uniform': BoxUniformPrior(*args)
 }
-models['mix'] = StochasticMixtureModel([models['ppr'], BoxUniformModel(*args)])
+models['mix'] = StochasticMixtureModel([models['ppr'], BoxUniformPrior(*args)])
 file_roots = {k: k for k in models}
 # answers = {k: models[k].nested_sample(file_root=file_roots[k], **fill_kwargs) for k in models}
 

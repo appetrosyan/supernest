@@ -2,10 +2,9 @@ import matplotlib.pyplot as plt
 from anesthetic.plot import get_legend_proxy
 from numpy import array
 from mpi4py import MPI
-from gaussian_models.power_posterior import PowerPosteriorPrior
-from gaussian_models.uniform import BoxUniformModel
-from general_mixture_model import StochasticMixtureModel
-from offset_model import OffsetModel
+from super_nest.framework.gaussian_models import PowerPosteriorPrior, BoxUniformPrior
+from super_nest.framework.mixtures import StochasticMixtureModel
+from super_nest.framework.offset_model import OffsetModel
 
 print(MPI)
 b = 10 ** 3
@@ -21,9 +20,9 @@ kwargs = {
 
 models = {
     'ppr': PowerPosteriorPrior(*args),
-    'uniform': BoxUniformModel(*args)
+    'uniform': BoxUniformPrior(*args)
 }
-models['mix'] = StochasticMixtureModel([models['ppr'], BoxUniformModel(*args)])
+models['mix'] = StochasticMixtureModel([models['ppr'], BoxUniformPrior(*args)])
 offsets = {k: OffsetModel(models[k], mu * 2) for k in models}
 answers = {
     'model': {k: models[k].nested_sample(**kwargs) for k in models},
