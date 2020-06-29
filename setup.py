@@ -11,9 +11,7 @@ with open("./README.md") as readme:
 
 if os.environ.get('CI_COMMIT_TAG'):
     ver = os.environ['CI_COMMIT_TAG']
-else:
-    ver = os.environ['CI_JOB_ID']
-
+   
 setuptools.setup(
     name='super-nest-a-p-petrosyan',
     version=ver,
@@ -24,9 +22,5 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     url='https://gitlab.com/a-p-petrosyan/sspr',
     packages=setuptools.find_packages(),
-    classifiers=[
-        'Programming Language :: Python :: 3',
-        'Operating System :: OS Independent',
-    ],
     python_requires='>=3.6',
 )

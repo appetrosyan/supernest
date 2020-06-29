@@ -3,3 +3,5 @@
 /.idea/
 /dist/
 /super_nest_a_p_petrosyan.egg-info/
+/super_nest/.idea/
+/super_nest/Pipfile.lock

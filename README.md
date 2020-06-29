@@ -188,6 +188,104 @@ outward appearances of using superposition under the hood, while also
 making use of some clever tricks, that you normally can't
 do. Effectively we're creating a quantum computer of nested samplers.
 
+## Is there a neater way? 
+
+Yes. If you know exactly what you want, you can (optionally) use the ``super_nest.framework`` module. This is a more class oriented interface that's much nicer to deal with, as it infers the dimensionality of the problem and is far simpler to use than the non-OOP direct interface. 
+
+So in that case, you would do something like 
+
+```
+from super_nest.framework.gaussian_models.uniform import BoxUniformModel
+
+mdl = BoxUniformModel((a, b), mu, cov, file_root='Uniform')
+```
+which creates a model with a box uniform prior which has corners at ``a`` and `b`, and a single Gaussian peak at `mu` with covariance `cov`. 
+
+Why would you want to use this? Well, how about if you wanted to create a mixture of this model, along with a custom model, that you defined as a class? 
+
+```
+from super_nest.framework.polychord_model import Model
+
+class MyCustomModel(Model):
+	def __init__(self, *args, **kwargs):
+		# get some stuff you need
+		pass
+		
+	def log_likelihood(self, theta):
+		return myCustomLogLike(theta)
+		
+	def quantiel(self, hypercube):
+		return myPriorQuantile(hypercube)
+		
+	@property
+	def dimensionality(self):
+		return nDims
+	
+	@property
+	def num_derived(self):
+		return nDerived
+
+```
+
+Which is admittedly more verbose, than just using base
+`super_nest.superimpose`. The reason why you'd want to do that, is
+that this will automatically track the dimensionality for you, create
+versions of ``loglike`` and prior quantile that correspond to what you
+want, and allows you to do some non-standard posterior repartitioning,
+that would otherwise be a headache to deal with.
+
+TL;DR, you could just do things like
+```
+from super_nest.framework.general_mixture_model import StochasticMixtureModel
+import super_nest.framework.gaussian_models as gm
+
+uniform = gm.uniform.Uniform((a,b), mu[0], cov[0], ...)
+gaussian = gm.truncated_gaussian.GaussianPeakedPrior((a,b), mu[1], cov[1], ...)
+ppr = gm.power_posterior.PowerPosteriorPrior((a,b), mu[2], cov[2],...)
+
+mix = StochasticMixtureModel([uniform, gaussian, ppr])
+
+...
+
+mix.nested_sample()
+```
+
+which for larger projects where the off by one error doesn't always
+cause a segfault, but is something that you discover several HPC hours
+later, is a necessity. I created this, despite having a decent-enough
+interface to PolyChord, because the situation of a Gaussian proposal
+mixed with some arbitrary code is a common use case. And in some
+circumstances (e.g. where you have no idea what the confidence
+intervals might be), you could prefer to use **power posterior
+repartitioning**, inside of a stochastic mixture. 
+
+You can do it with just `super_nest.superimpose`, but it would be a
+much bigger hassle. The domain of Bayesian inference has many common
+patters, so it really does pay to use a slightly more complicated
+system, but not to worry about "did I get the linear transformation
+right?" kinds of questions. This is MIT licensed, so why bother
+implementing something in your own code, when you can just create a PR
+(I promise I don't bite).
+
+
+Unfortunately this framework only works with PolyChord (yet), but work
+is in place to make it universal. The idea is that different samplers
+have different use-cases, and ideally the `super_nest.framework` would
+choose the right tool for the right job.  Specifically, there's work
+planned to include support for ``PyMultiNest``, as it's much faster for
+low-dimensional inference problems (it scales exponentially, so low
+really means no more than five parameters). In some cases, when the
+log-likelihood evaluation is **very slow**, it would make sense to use
+something like ``dynesty``, while pure-python has its drawbacks (the
+only thing this language is good at is racking massive technical debt,
+that you hope never to reap), ``dynesty`` is a dynamic sampler,
+meaning that it can potentially outperform any of the ones on the list
+(there's also `dypolychord`, which is a very well-made package). 
+
+It will likely be the chief influence on the API for the next
+generation dynamic superpositional trans-dimensional sampler, so
+getting to know this API might be worth the extra time.
+
 # Does this support the X sampler. 
 Yes. This is a very thin module, and while I have assumed a
 `PolyChord`-like calling convention (also `dynesty`), you can use it
@@ -235,4 +333,5 @@ the distribution.
 
 
 # License - MIT
+
 

@@ -1,5 +1,6 @@
 from random import random, seed
-from numpy import concatenate
+from numpy import concatenate, sqrt, log, pi
+from scipy.special import erf, erfinv
 
 
 def superimpose(models: list, nDims: int = None):
@@ -89,3 +90,86 @@ def superimpose(models: list, nDims: int = None):
         return prior_quantile, likelihood
 
 
+def _eitheriter(ab):
+    a, b = ab
+    return hasattr(a, '__iter__') or hasattr(b, '__iter__')
+
+
+def gaussian_proposal(bounds, mean, stdev, bounded=False, loglike=None):
+    """This function provides the most common type of proposal that's
+    acceptable into Stochastic mixtures. Given a uniform prior defined
+    by bounds, it produces a gaussian prior quantile and a correction
+    to the log-likelihood.
+
+    If the loglike parameter is passed the returned is already a
+    wrapped function (you don't need to wrap it in a callable yourself).
+
+    This should be your first, and perhaps last point of call,
+
+    Parameters
+    ----------
+    bounds : array-like
+    A tuple that represents the original uniform prior.
+
+
+    mean : array-like
+    The vector \\mu at which the proposal is to be centered.
+
+    stdev : array-like
+    The vector of standard deviations. Currently only
+    uncorrelated Gaussians are supported.
+
+    bounded : bool, optional
+    Currently the algorithm produces
+    untruncated Gaussians. In the future, once the boundary effects
+    have been thoroughly examined, this will be supported.
+
+    loglike: callable: (array-like) -> (real, array-like), optional
+    The callable that constitutes the model likelihood.  If provided
+    will be included in the output. Otherwise assumed to be
+    lambda (): 0
+
+
+    Returns
+    -------
+    (prior_quantile, loglike_corrected): tuple(callable, callable)
+    This is the output to be used in the stochastic mixing. You can
+    use it directly, if you're certain that this is the exact shape of
+    the posterior. Any deviation, however, will be strongly imprinted
+    in the posterior, so you should think carefully before doing this.
+
+    """
+    if bounded:
+        raise NotImplementedError(
+            'Truncated gaussian proprosals are not yet implemented.')
+    if len(mean) != len(stdev):
+        raise ValueError(
+            'mean and covariance are of incompatible lengths. {} {}'
+            .format(len(mean), len(stdev)))
+    try:
+        if len(stdev[0]) != len(mean):
+            raise NotImplementedError('Covariance matrices are not supported.')
+    except TypeError:
+        pass
+
+    a, b = bounds
+    RT2, RTG = sqrt(2), sqrt(1/2)/stdev
+    da = erf((a-mean)*RTG)
+    db = erf((b-mean)*RTG)
+    log_box = log(b-a).sum() if _eitheriter((a, b)) else len(mean)*log(b-a)
+
+    def quantile_(cube):
+        theta_ = erfinv((1-cube)*da + cube*db)
+        return mean + RT2*stdev*theta_
+
+    def correction_(theta):
+        if loglike is None:
+            ll, phi_ = 0, []
+        else:
+            ll, phi_ = loglike(theta)
+            corr = -((theta-mean)**2) / (2*stdev**2)
+            corr -= log((pi*stdev**2)/2)/2
+            corr -= log(db-da)
+            return ll+corr-log_box, phi_
+
+    return quantile_, correction_
