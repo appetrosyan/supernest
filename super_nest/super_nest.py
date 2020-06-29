@@ -1,3 +1,35 @@
+"""This package contains the only important function superimpose. The
+sublmodule `super_nest.framework` is included for more complex tasks
+that involve complicated models and custom code, and offer a much
+better user experience, compared to base `super_nest`.
+
+The usage is as follows.
+
+Let models be denoted by a tuple (pi, lgL), where pi is the
+prior_quantile function (or prior point-percent function) and the
+likelihood, is represented by its logarithm.
+
+Normally you\'d run a nested sampler like
+
+sampler.sample(pi, nDims, lgL, nDerived).
+
+Using `super_nest`, you can accelerate the inference, by providing it
+extra information in terms of an extra prior and an extra lilelihood
+pair (pi_p, lgL_p), which are normalied such that:
+
+pi.pdf(x) * L.pdf(x) = pi_p.pdf(x) * L_p.pdf(x)
+
+Then yuou can put them into a stochastic mixture, by using superimpose, e.g.
+
+pi_m, lgL_m = super_nest.superimpose([(pi, lgL), (pi_p, lgL_p)])
+
+and then use it as you would pi and lgL. The result is a sampling run
+that is roughly 30 times faster and 100 times more precise. I could
+speculate about the accuracy, i.e. that within the confines of testing
+of a masters\' thesis project, I haven\' found anything that would not
+work and bias the output, but that\'s hardly a high standard of
+testing.
+"""
 from random import random, seed
 from numpy import concatenate, sqrt, log, pi
 from scipy.special import erf, erfinv
@@ -43,7 +75,7 @@ def superimpose(models: list, nDims: int = None):
     validate_likelihood=False: bool
     if nDims is passed, makes sure that the likelihood
     functions are well-bevahed in the hypercube.
-    Don't use with slow likelihood functions.
+    Don\'t use with slow likelihood functions.
 
 
     Returns
@@ -96,13 +128,13 @@ def _eitheriter(ab):
 
 
 def gaussian_proposal(bounds, mean, stdev, bounded=False, loglike=None):
-    """This function provides the most common type of proposal that's
+    """This function provides the most common type of proposal that\'s
     acceptable into Stochastic mixtures. Given a uniform prior defined
     by bounds, it produces a gaussian prior quantile and a correction
     to the log-likelihood.
 
     If the loglike parameter is passed the returned is already a
-    wrapped function (you don't need to wrap it in a callable yourself).
+    wrapped function (you don\'t need to wrap it in a callable yourself).
 
     This should be your first, and perhaps last point of call,
 
@@ -127,14 +159,14 @@ def gaussian_proposal(bounds, mean, stdev, bounded=False, loglike=None):
     loglike: callable: (array-like) -> (real, array-like), optional
     The callable that constitutes the model likelihood.  If provided
     will be included in the output. Otherwise assumed to be
-    lambda (): 0
+    lambda () -> 0
 
 
     Returns
     -------
     (prior_quantile, loglike_corrected): tuple(callable, callable)
     This is the output to be used in the stochastic mixing. You can
-    use it directly, if you're certain that this is the exact shape of
+    use it directly, if you\'re certain that this is the exact shape of
     the posterior. Any deviation, however, will be strongly imprinted
     in the posterior, so you should think carefully before doing this.
 

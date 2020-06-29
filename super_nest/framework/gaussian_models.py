@@ -1,3 +1,9 @@
+"""This module provides convenience classes that should make writing
+your own proposals and using stochastic mixtures much easier. You
+don't need to worry about the logistics of truncation, of the problems
+that it might cause or indeed of any of the issues caused by passing
+in arrays of a different size than nDims.
+"""
 from abc import ABC
 
 from numpy import pi, array, log, concatenate, diag, sqrt, nextafter

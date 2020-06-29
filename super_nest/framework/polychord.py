@@ -3,9 +3,8 @@ from copy import deepcopy
 from anesthetic import NestedSamples
 from numpy import zeros
 
-# As of now PolyChord is not pip-installable.
+# As of now PolyChord is not `pip install pypolychord` -able
 # noinspection PyUnresolvedReferences,PyUnresolvedReferences
-
 from pypolychord import run_polychord
 # noinspection PyUnresolvedReferences,PyUnresolvedReferences
 from pypolychord.settings import PolyChordSettings
@@ -109,7 +108,7 @@ class Model:
 
         """
         
-        _nDims = len(self.quantile(zeros(self.dimensionality)))
+        _nDims = len(self.prior_quantile(zeros(self.dimensionality)))
         if _nDims != self.dimensionality:
             raise ValueError(f'Prior has the wrong dimensions: expect {_nDims} vs actual {self.dimensionality}')
 
@@ -129,7 +128,7 @@ class Model:
         self.test_log_like()
         self.test_quantile()
         _settings = self.setup_settings(**kwargs)
-        output = run_polychord(self.log_likelihood, self.dimensionality, self.num_derived, _settings, self.quantile)
+        output = run_polychord(self.log_likelihood, self.dimensionality, self.num_derived, _settings, self.prior_quantile)
         try:
             samples = NestedSamples(
                 root=f'./chains/{_settings.file_root}')
@@ -140,7 +139,7 @@ class Model:
 
     # noinspection SpellCheckingInspection
     def setup_settings(self, file_root=None, live_points=175, resume=True, verbosity=0):
-        """This is a helper function that sets PolyCHord up with sane defaults. 
+        """This is a helper function that sets PolyChord up with sane defaults. 
         """
         _settings = deepcopy(self.settings)
         _settings.feedback = verbosity

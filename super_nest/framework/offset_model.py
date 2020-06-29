@@ -1,9 +1,21 @@
+"""This classs provides a convenient wrapper around the standard
+models, and allows introducing an offset between the likelihood and
+prior coordinate systems. This is useful for testing and simulating
+priors that have are at variance with the likelihood. You only need
+this, if you want to have a prior that\'s **deliberately** offset from
+where you expect the likelihood peak to be located at.
+
+"""
 from numpy import pad
 
-from polychord_model import Model
+from .framework.polychord import Model
 
 
 class OffsetModel(Model):
+    """An abstract offset model decorator. Pass it any model and it will
+    return a model that's offset by a vector.
+
+    """
     default_file_root = 'OffsetModel'
 
     def __str__(self):
@@ -24,8 +36,8 @@ class OffsetModel(Model):
     def log_likelihood(self, theta):
         return self.model.log_likelihood(theta - self.offset)
 
-    def quantile(self, *args):
-        return self.model.quantile(*args)
+    def prior_quantile(self, *args):
+        return self.model.prior_quantile(*args)
 
     @property
     def dimensionality(self):

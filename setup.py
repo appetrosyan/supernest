@@ -9,11 +9,11 @@ LONG_DESCRIPTION = SHORT_DESCRIPTION
 with open("./README.md") as readme:
     LONG_DESCRIPTION = readme.read()
 
-ver = "0.0.5"
+ver = "0.1.0"
 
 if os.environ.get('CI_COMMIT_TAG'):
     ver = os.environ['CI_COMMIT_TAG']
-   
+
 setuptools.setup(
     name='super-nest-a-p-petrosyan',
     version=ver,
@@ -23,6 +23,11 @@ setuptools.setup(
     long_description=LONG_DESCRIPTION,
     long_description_content_type='text/markdown',
     url='https://gitlab.com/a-p-petrosyan/sspr',
+    install_requires=['anesthetic', 'pypolychord', 'numpy', 'matplotlib'],
     packages=setuptools.find_packages(),
+    license='MIT',
     python_requires='>=3.6',
+    classifiers=[
+        'License :: OSI Approved :: MIT License'
+    ]
 )
