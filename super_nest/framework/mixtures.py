@@ -13,7 +13,7 @@ from random import random, seed
 
 from numpy import concatenate
 
-from polychord_model import Model
+from .polychord import Model
 
 
 def _are_all_elements_identical(lst):
@@ -50,20 +50,20 @@ class AbstractMixtureModel(Model, ABC):
         super().__init__(self.dimensionality, self.num_derived, file_root, **kwargs)
 
     def test_quantile(self):
-        __doc__ = super(self).__doc__
+        __doc__ = super().__doc__
         for m in self.models:
             m.test_quantile()
         super().test_quantile()
 
     def test_log_like(self):
-        __doc__ = super(self).__doc__
+        __doc__ = super().__doc__
         for m in self.models:
             m.test_log_like()
         super().test_log_like()
 
     @property
     def num_derived(self):
-        __doc__ = super(self).__doc__
+        __doc__ = super().__doc__
         return self.nDerived
 
 
@@ -85,10 +85,7 @@ class StochasticMixtureModel(AbstractMixtureModel):
 
     @property
     def dimensionality(self):
-        """
-        Depending on your implementation, you want to have either this or this - 1. 
-        """
-        __doc__ = super(self).dimensionality.__doc__ + __doc__
+        __doc__ = super().dimensionality.__doc__
         return self.nDims + len(self.models)
 
     def _unpack(self, theta):
@@ -98,7 +95,7 @@ class StochasticMixtureModel(AbstractMixtureModel):
         return physical_params, choice_probabilities, index
 
     def log_likelihood(self, theta):
-        __doc__ = super(self).__doc__
+        __doc__ = super().__doc__
         t, _, m = self._unpack(theta)
         _current_model = self.models[int(m)]
         _nDims = _current_model.dimensionality
@@ -106,8 +103,7 @@ class StochasticMixtureModel(AbstractMixtureModel):
         return log_l, phi
 
     def prior_quantile(self, hypercube):
-        """This is where black magic happens!"""
-        __doc__ = super(self).__doc__ + __doc__
+        __doc__ = super().__doc__ 
         t, b, _ = self._unpack(hypercube)
         norm = b.sum() if b.sum() != 0 else 1
         ps = b / norm

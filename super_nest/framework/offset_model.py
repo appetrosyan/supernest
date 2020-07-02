@@ -8,7 +8,7 @@ where you expect the likelihood peak to be located at.
 """
 from numpy import pad
 
-from .framework.polychord import Model
+from .polychord import Model
 
 
 class OffsetModel(Model):

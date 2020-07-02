@@ -1,5 +1,5 @@
 """This package contains the only important function superimpose. The
-sublmodule `super_nest.framework` is included for more complex tasks
+submodule `super_nest.framework` is included for more complex tasks
 that involve complicated models and custom code, and offer a much
 better user experience, compared to base `super_nest`.
 

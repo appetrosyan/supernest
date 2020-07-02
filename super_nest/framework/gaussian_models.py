@@ -11,7 +11,7 @@ from numpy.linalg import slogdet, multi_dot, inv, pinv
 from scipy.special import erf, erfinv
 from functools import lru_cache
 
-from .framework.polychord_model import Model
+from .polychord import Model
 from pypolychord.priors import UniformPrior
 
 
