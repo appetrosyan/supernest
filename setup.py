@@ -1,5 +1,5 @@
 """Setup code for the SSPR Package"""
-from  setuptools import setup, find_pacakges
+import setuptools
 import os
 
 SHORT_DESCRIPTION = 'A wrapper for use of SSPR in \
@@ -14,7 +14,7 @@ ver = "1.0.0"
 if os.environ.get('CI_COMMIT_TAG'):
     ver = os.environ['CI_COMMIT_TAG']
 
-setup(
+setuptools.setup(
     name='super-nest-a-p-petrosyan',
     version=ver,
     author='Aleksandr Petrosyan',
@@ -24,7 +24,7 @@ setup(
     long_description_content_type='text/markdown',
     url='https://gitlab.com/a-p-petrosyan/sspr',
     install_requires=['anesthetic', 'pypolychord', 'numpy', 'matplotlib'],
-    packages=find_packages(),
+    packages=setuptools.find_packages(),
     license='MIT',
     python_requires='>=3.6',
     classifiers=[
