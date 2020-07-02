@@ -46,5 +46,5 @@ deploy_to_test_pypi:
     TWINE_PASSWORD: $PRODUCTION_PASSWORD
   script:
     - pip install twine
-    - twine upload --repository testpypi dist/* 
+    - twine upload --repository pypi dist/* 
     
