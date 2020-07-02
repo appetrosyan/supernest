@@ -60,7 +60,8 @@ Suppose you had a unfirom prior `pi` and likelihood `l`. To use them
 in nested sampling, you need a prior quantile, and the logarithm of
 the likelihood. You need to pass both to the sampler, e.g.
 ```
-settings= PolyChordSettings(nDims, nDerived, ...)
+# This is pseudo-code.
+settings = PolyChordSettings(nDims, nDerived, ...)
 run_polychord(log(l), functional_inverse(cumulative_dist(pi)), nDims,
 nDerived ...)  
 ``` 
@@ -70,7 +71,7 @@ of your prior space. If you have a box with corners at `a` and `b`,
 then the uniform prior quantile is:
 ```
 def quantile(cube):
-	return a + (b-a)*cube
+	return a + (b-a) * cube
 ```
 
 Let's say you have a hunch that the posterior would be a Gaussian at
@@ -236,12 +237,14 @@ that would otherwise be a headache to deal with.
 
 TL;DR, you could just do things like
 ```
-from super_nest.framework.general_mixture_model import StochasticMixtureModel
-import super_nest.framework.gaussian_models as gm
+from super_nest.framework.mixture import StochasticMixtureModel
+from super_nest.framework.gaussian_models import (GaussianPeakedPrior,
+                                                  Uniform,
+                                                  PowerPosteriorPrior)
 
-uniform = gm.uniform.Uniform((a,b), mu[0], cov[0], ...)
-gaussian = gm.truncated_gaussian.GaussianPeakedPrior((a,b), mu[1], cov[1], ...)
-ppr = gm.power_posterior.PowerPosteriorPrior((a,b), mu[2], cov[2],...)
+uniform = Uniform((a,b), mu[0], cov[0], ...)
+gaussian = GaussianPeakedPrior((a,b), mu[1], cov[1], ...)
+ppr = PowerPosteriorPrior((a,b), mu[2], cov[2],...)
 
 mix = StochasticMixtureModel([uniform, gaussian, ppr])
 
@@ -296,11 +299,22 @@ Very similar to PolyChord, (and also quite popular). Use as follows:
 ```
 from super_nest import superimpose
 
-n_dims, my_prior_quantile, my_likelihood = superimpose([(prior1, like1), (proposal_prior1, proposal_like1)], nDims)
-solve(LogLikelihood= my_likelihood, Prior= my_prior_quantile, n_dims = n_dims)
+n_dims, my_prior_quantile, my_likelihood = superimpose(
+    [(prior1, like1), (proposal_prior1, proposal_like1)],
+	nDims)
+solve(LogLikelihood=my_likelihood, Prior=my_prior_quantile, n_dims=n_dims)
 ```
 
 ## dynesty
+
+Has the same standard interface. 
+
+## MultinestAE
+
+IF you want to use `Multinest`, you should wait for a FORTRAN version of
+this package to use directly with MultiNest. If you want to use
+MultiNest with `super_nest` consider `pymultinest` a hard
+requirement for now. 
 
 
 # What is this useful for 
@@ -332,6 +346,24 @@ often do in nested sampling) and used the posterior chains to generate
 the distribution.
 
 
-# License - MIT
+# License - LGPLv3
+TL;DR; 
 
+It's a permissive license that's GPL compatible. if you want a deeper
+understanding: (https://www.gnu.org/licenses/lgpl-3.0.en.html)[go
+here].
+# Contributing. 
+This is a python package. You don't normally need much beyond creating
+pull requests, for features that you think should be in. 
 
+I don't care about Pep8. It's a misguided collection of near-sighted
+practices, that are emblematic of the problems python has. Namely,
+that it's an interpreted language that's very hard to read for a
+computer, making python slower than it has to be. 
+
+So this means that 
+- if you have a proposal, and it's not pep8. It's fine. 
+- if you have a proposal and it's pep8, it's also fine. 
+- if you have a proposal that's just about making the code pep8. It's fine. 
+
+I don't bite.
