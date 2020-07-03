@@ -30,3 +30,6 @@ of a masters\' thesis project, I haven\' found anything that would not
 work and bias the output, but that\'s hardly a high standard of
 testing.
 """
+
+from .super_nest import gaussian_proposal
+from .super_nest import superimpose

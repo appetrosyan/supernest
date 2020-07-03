@@ -6,3 +6,5 @@
 /super_nest/.idea/
 /super_nest/Pipfile.lock
 *.pyc
+/run_polychord.py
+*.egg-info*
