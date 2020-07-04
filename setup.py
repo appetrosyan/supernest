@@ -69,6 +69,6 @@ setuptools.setup(
     # contain baffliningly terrible design choices. Your hand-rolled
     # solution is probably better. Same with PyPI.
     classifiers=[
-        'License :: OSI Approved :: GNU Lesser General Public License v3(LGPLv3)'
+        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)'
     ]
 )
