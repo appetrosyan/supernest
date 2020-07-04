@@ -9,13 +9,13 @@ LONG_DESCRIPTION = SHORT_DESCRIPTION
 with open("./README.md") as readme:
     LONG_DESCRIPTION = readme.read()
 
-version="1.0.2"
+version="1.0.3"
 
 if os.environ.get('CI_COMMIT_TAG'):
     version = os.environ['CI_COMMIT_TAG']
 
 setuptools.setup(
-    name='super-nest',
+    name='supernest',
     version=version,
     author='Aleksandr Petrosyan',
     author_email='a-p-petrosyan@yandex.ru',

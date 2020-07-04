@@ -3,8 +3,8 @@ from nestcheck.data_processing import batch_process_data, process_polychord_run
 from nestcheck.plots import param_logx_diagram
 from numpy import array
 # from mpi4py import MPI
-from super_nest.framework.gaussian_models import PowerPosteriorPrior, BoxUniformPrior
-from super_nest.framework.mixtures import StochasticMixtureModel
+from supernest.framework.gaussian_models import PowerPosteriorPrior, BoxUniformPrior
+from supernest.framework.mixtures import StochasticMixtureModel
 
 b = 10 ** 2
 a = array([-b, -b, -b])

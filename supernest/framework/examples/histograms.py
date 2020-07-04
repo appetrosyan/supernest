@@ -4,9 +4,9 @@ from matplotlib import rc
 # from mpi4py import MPI
 from numpy import array, sqrt, exp, pi, linspace
 
-from super_nest.framework.gaussian_models import (
+from supernest.framework.gaussian_models import (
     PowerPosteriorPrior, BoxUniformPrior, GaussianPeakedPrior, ResizeablePrior)
-from super_nest.framework.mixtures import StochasticMixtureModel
+from supernest.framework.mixtures import StochasticMixtureModel
 
 rc('font', **{'family': 'serif', 'serif': ['Times']})
 rc('text', usetex=True)

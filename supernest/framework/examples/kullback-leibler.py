@@ -3,9 +3,9 @@ import tikzplotlib
 from matplotlib import rc
 from numpy import array, mean, std, polyfit, concatenate, polyval, linspace, diag, sqrt
 from mpi4py import MPI
-from super_nest.framework.gaussian_models import (
+from supernest.framework.gaussian_models import (
     PowerPosteriorPrior, BoxUniformPrior, GaussianPeakedPrior, ResizeablePrior)
-from super_nest.framework.mixtures import StochasticMixtureModel
+from supernest.framework.mixtures import StochasticMixtureModel
 from misc.data_series import Series
 from misc.parallelism import parmap
 from misc.ui import progressbar as tqdm

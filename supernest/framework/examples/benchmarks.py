@@ -7,11 +7,11 @@ from numpy import array, mean, std
 # from mpi4py import MPI
 # print(MPI)
 
-from super_nest.framework.gaussian_models import (PowerPosteriorPrior,
+from supernest.framework.gaussian_models import (PowerPosteriorPrior,
                                                   GaussianPeakedPrior,
                                                   BoxUniformPrior)
-from super_nest.framework.mixtures import StochasticMixtureModel
-from super_nest.framework.offset_model import OffsetModel
+from supernest.framework.mixtures import StochasticMixtureModel
+from supernest.framework.offset_model import OffsetModel
 
 from misc.data_series import Series
 from misc.parallelism import parmap

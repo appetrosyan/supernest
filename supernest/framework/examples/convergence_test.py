@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 from anesthetic.plot import get_legend_proxy
 from numpy import array
 from mpi4py import MPI
-from super_nest.framework.gaussian_models import PowerPosteriorPrior, BoxUniformPrior
-from super_nest.framework.mixtures import StochasticMixtureModel
-from super_nest.framework.offset_model import OffsetModel
+from supernest.framework.gaussian_models import PowerPosteriorPrior, BoxUniformPrior
+from supernest.framework.mixtures import StochasticMixtureModel
+from supernest.framework.offset_model import OffsetModel
 
 print(MPI)
 b = 10 ** 3

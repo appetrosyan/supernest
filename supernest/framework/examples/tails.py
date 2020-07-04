@@ -1,6 +1,6 @@
 from numpy import array, diag
 
-from super_nest.framework.gaussian_models import PowerPosteriorPrior, BoxUniformPrior
+from supernest.framework.gaussian_models import PowerPosteriorPrior, BoxUniformPrior
 
 mu = array([1, 2, 3])
 cov = diag([1, 1, 1])
