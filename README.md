@@ -1,3 +1,6 @@
+[![pipeline status](https://gitlab.com/user/a-p-petrosyan/sspr/master/pipeline.svg)](https://gitlab.com/a-p-petrosyan/sspr/commits/master)
+
+
 # Super Nest
 
 Stochastic superpositional posterior repartitioning used in
