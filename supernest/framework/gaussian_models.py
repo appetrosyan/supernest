@@ -297,6 +297,8 @@ class ResizeablePrior(ParameterCovarianceModel):
 
     @property
     def dimensionality(self):
-        """The dimensionality of the resizeable bounds uniform prior is nDims + 1.
+        """The dimensionality of the resizeable bounds uniform prior is nDims
+        + 1.
+
         """
         return self.nDims + 1

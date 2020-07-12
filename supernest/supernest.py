@@ -141,25 +141,25 @@ def gaussian_proposal(bounds, mean, stdev, bounded=False, loglike=None):
     Parameters
     ----------
     bounds : array-like
-    A tuple that represents the original uniform prior.
+        A tuple that represents the original uniform prior.
 
 
     mean : array-like
-    The vector \\mu at which the proposal is to be centered.
+        The vector \\mu at which the proposal is to be centered.
 
     stdev : array-like
-    The vector of standard deviations. Currently only
-    uncorrelated Gaussians are supported.
+        The vector of standard deviations. Currently only
+        uncorrelated Gaussians are supported.
 
     bounded : bool, optional
-    Currently the algorithm produces
-    untruncated Gaussians. In the future, once the boundary effects
-    have been thoroughly examined, this will be supported.
+        Currently the algorithm produces
+        untruncated Gaussians. In the future, once the boundary effects
+        have been thoroughly examined, this will be supported.
 
     loglike: callable: (array-like) -> (real, array-like), optional
-    The callable that constitutes the model likelihood.  If provided
-    will be included in the output. Otherwise assumed to be
-    lambda () -> 0
+        The callable that constitutes the model likelihood.  If provided
+        will be included in the output. Otherwise assumed to be
+        lambda () -> 0
 
 
     Returns
