@@ -1,0 +1,15 @@
+
+* SuperNest
+
+  A package to perform stochastic superpositional mixing of proposal
+  priors for nested sampling engines such as [[https://pypi.org/project/pypolychord/][PolyChord]] and [[https://pypi.org/project/dynesty/][Dynesty.]]
+
+* installation
+
+  #+BEGIN_SRC bash
+  pip install supernest
+  #+END_SRC
+
+* How to 
+  If you are already using a considerable amount of nested sampling
+  code, then you might want to use the bare supernest

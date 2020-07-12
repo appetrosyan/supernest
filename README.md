@@ -1,15 +1,8 @@
 # Super Nest
 
 Stochastic superpositional posterior repartitioning used in
-conjunction with Bayesian inference engines such as PolyChord and
-MultiNest.
-
-# What is Bayesian inference
-
-Bayesian inference is a suitable framework for model fitting.  You
-give it a theory and some data and it tells you how well the theory
-fits the data, while also telling you what the theory's parameters
-should be for the fit to be the best.
+conjunction with Bayesian inference engines such as PolyChord, dynesty
+and MultiNest.
 
 # Installation
 
@@ -20,40 +13,19 @@ pip install super-nest
 
 though other packages will be developed as needed.
 
-If you know what you're doing you can clone this repository and
-install manually, using
-
+If you want `super_nest` then you need to have a nested sampler installed, e.g. 
 ```
-cd super-nest && python3 setup.py
+pip install dynesty
 ```
 
-You also need to have either
-[PolyChord](https://github.com/PolyChord/PolyChordLite) or
-[MultiNest](https://github.com/farhanferoz/MultiNest) (or both)
-installed.
-# Usage
+or 
 
-This is planned as a simple convenient package that you use with a sampler. 
+```
+pip install pypolychord
+```
 
-Suppose that you had a set-up with `PolyChord` that involved a prior
-quantile `prior` a log-likelihood function, `loglike` all of which
-operated on an `nDims` dimensional space. 
 
-Often you'd be using a uniform prior. You're sure that using a
-different prior would cause an imprint, which is fine if that prior
-was based on a previous run, but not so if you just used it as a
-hunch. As hunch is used liberally here, you could have an intuition,
-or you could have done a run using a different model and extrapolated
-the posterior. 
 
-Previously all such information could not be used. Nested sampling
-would return all of that information to you and you wouldn't be able
-to tell, if this is actually what the data suggests, or that you
-simply gave it too much info out of thin air.
-
-Well, now you can use that information and get your sampling to run
-faster, but to produce the output you would have gotten had you used a
-uniform prior (and a lot more live points).
 
 ## General overview.
 Suppose you had a unfirom prior `pi` and likelihood `l`. To use them
