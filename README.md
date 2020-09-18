@@ -9,7 +9,7 @@ priors for nested sampling engines such as
 installation
 ============
 
-``` {.bash}
+```bash
 pip install supernest
 ```
 
@@ -73,7 +73,7 @@ model everywhere in the domain.
 To avoid tedious calculations a function that computes a Gaussian
 quantile and a proposal log-likelihood is provided:
 
-``` {.python}
+```python
 from supernest import gaussian_proposal
 
 proposal_prior, proposal_loglike = gaussian_proposal(
