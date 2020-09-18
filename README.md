@@ -97,7 +97,7 @@ superposition of the models that you have.
 
 The best way to do it, is to use the `supernest.superimpose` function.
 
-``` {.python}
+```python
 from supernest import superimpose
 
 super_n_dims, super_prior, super_like = superimpose(
@@ -108,7 +108,7 @@ super_n_dims, super_prior, super_like = superimpose(
 After which you can use the functions in any of the samplers of your
 choosing. For example, `pymultinest`
 
-``` {.python}
+``` python
 from pymultinest import solve
 
 solve(LogLikelihood=super_like, Prior=super_prior, n_dims=super_n_dims,
