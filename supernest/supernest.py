@@ -31,7 +31,7 @@ work and bias the output, but that\'s hardly a high standard of
 testing.
 """
 from random import random, seed
-from numpy import concatenate, sqrt, log, pi
+from numpy import concatenate, sqrt, log, pi, array
 from scipy.special import erf, erfinv
 
 
@@ -41,7 +41,7 @@ def superimpose(models: list, nDims: int = None):
 
     Parameters
     ----------
-    models :list(tuples(callable, callable))
+    models: list(tuples(callable, callable))
 
     This is a list of pairs of functions. The first functions
     (quantile-like) will be interpreted as prior quantiles. They will
@@ -85,14 +85,13 @@ def superimpose(models: list, nDims: int = None):
     returns a tuple of functions: the superposition of the prior
     quantiles and the likelihoods (in that order).
 
-    (nDims :int, prior_quantile: callable, likelihood: callable) : tuple
+    (nDims: int, prior_quantile: callable, likelihood: callable): tuple
     if the optional argument nDims is not None, the output also
     contains an nDims: the number of dimensions that you should ask
     your dimesnional sampler to pass.
 
     """
-    priors, likes = [prior for prior, _ in models], [
-        like for _, like in models]
+    priors, likes = [p for p, _ in models], [l for _, l in models]
 
     def prior_quantile(cube):
         physical_params = cube[:-len(models)]
