@@ -1,3 +1,4 @@
+
 """This package contains the only important function superimpose. The
 submodule `super_nest.framework` is included for more complex tasks
 that involve complicated models and custom code, and offer a much
@@ -98,7 +99,7 @@ def superimpose(models: list, nDims: int = None):
         choice_params = cube[-len(models):-1]
         index = 0
         norm = choice_params.sum()
-        norm = 1 if norm == 0 else norm
+        norm = 1 if norm == 0 or len(choice_params) == 1 else norm
         ps = choice_params / norm
         h = hash(tuple(physical_params))
         seed(h)
@@ -108,12 +109,14 @@ def superimpose(models: list, nDims: int = None):
                 break
             index += 1
         theta = priors[index](physical_params)
-        return concatenate([theta, ps, [index]])
+        ret =  array(concatenate([theta, ps, [index]]))
+        return ret
 
     def likelihood(theta):
         physical_params = theta[:-len(models)]
         index = int(theta[-1:].item())
-        return likes[index](physical_params)
+        ret = likes[index](physical_params)
+        return ret
 
     if nDims is not None:
         return nDims+len(models), prior_quantile, likelihood
@@ -184,6 +187,8 @@ def gaussian_proposal(bounds, mean, stdev, bounded=False, loglike=None):
         pass
 
     a, b = bounds
+    cov = stdev
+    stdev = stdev.diagonal()
     RT2, RTG = sqrt(2), sqrt(1/2)/stdev
     da = erf((a-mean)*RTG)
     db = erf((b-mean)*RTG)
@@ -201,6 +206,6 @@ def gaussian_proposal(bounds, mean, stdev, bounded=False, loglike=None):
             corr = -((theta-mean)**2) / (2*stdev**2)
             corr -= log((pi*stdev**2)/2)/2
             corr -= log(db-da)
-            return ll+corr-log_box, phi_
+            return (ll+corr-log_box).sum(), phi_
 
     return quantile_, correction_
