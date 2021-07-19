@@ -109,7 +109,7 @@ def superimpose(models: list, nDims: int = None):
                 break
             index += 1
         theta = priors[index](physical_params)
-        ret =  array(concatenate([theta, ps, [index]]))
+        ret =  array(concatenate([theta, probs, [index]]))
         return ret
 
     def likelihood(theta):
@@ -190,6 +190,8 @@ def gaussian_proposal(bounds, mean, stdev, bounded=False, loglike=None):
         a, b = bounds
     except ValueError as e:
         a, b = bounds.T
+
+    stdev = stdev.diagonal()
     RT2, RTG = sqrt(2), sqrt(1/2)/stdev
     da = erf((a-mean)*RTG)
     db = erf((b-mean)*RTG)
