@@ -100,12 +100,12 @@ def superimpose(models: list, nDims: int = None):
         index = 0
         norm = choice_params.sum()
         norm = 1 if norm == 0 or len(choice_params) == 1 else norm
-        ps = choice_params / norm
+        probs = choice_params / norm
         h = hash(tuple(physical_params))
         seed(h)
-        r = random()
-        for p in ps:
-            if r > p:
+        rand = random()
+        for p in probs:
+            if rand > p:
                 break
             index += 1
         theta = priors[index](physical_params)
@@ -186,9 +186,10 @@ def gaussian_proposal(bounds, mean, stdev, bounded=False, loglike=None):
     except TypeError:
         pass
 
-    a, b = bounds
-    cov = stdev
-    stdev = stdev.diagonal()
+    try:
+        a, b = bounds
+    except ValueError as e:
+        a, b = bounds.T
     RT2, RTG = sqrt(2), sqrt(1/2)/stdev
     da = erf((a-mean)*RTG)
     db = erf((b-mean)*RTG)
