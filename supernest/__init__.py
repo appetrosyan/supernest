@@ -1,35 +1,34 @@
-"""This package contains the only important function superimpose. The
-submodule `super_nest.framework` is included for more complex tasks
-that involve complicated models and custom code, and offer a much
-better user experience, compared to base `super_nest`.
+r"""Superpositional model repartitiong for accelerated nested sampling.
 
-The usage is as follows.
+model repartitioning also known as posterior or more accurrately
+conclusion re-partitioning is a technique that allows reshaping the
+input functions: prior and likelihood and achieving faster Bayesian
+inference by way of Nested Sampling.
 
-Let models be denoted by a tuple (pi, lgL), where pi is the
-prior_quantile function (or prior point-percent function) and the
-likelihood, is represented by its logarithm.
+IMPORTANT: This is an early version of the software, which does not
+yet have the links to the proper publication, nor indeed is guaranteed
+to function. If you use this for your research, please consider
+waiting until the full release.
 
-Normally you\'d run a nested sampler like
-
-sampler.sample(pi, nDims, lgL, nDerived).
-
-Using `super_nest`, you can accelerate the inference, by providing it
-extra information in terms of an extra prior and an extra lilelihood
-pair (pi_p, lgL_p), which are normalied such that:
-
-pi.pdf(x) * L.pdf(x) = pi_p.pdf(x) * L_p.pdf(x)
-
-Then yuou can put them into a stochastic mixture, by using superimpose, e.g.
-
-pi_m, lgL_m = super_nest.superimpose([(pi, lgL), (pi_p, lgL_p)])
-
-and then use it as you would pi and lgL. The result is a sampling run
-that is roughly 30 times faster and 100 times more precise. I could
-speculate about the accuracy, i.e. that within the confines of testing
-of a masters\' thesis project, I haven\' found anything that would not
-work and bias the output, but that\'s hardly a high standard of
-testing.
 """
+from .core import superimpose as __superimpose
+from .core import gaussian_proposal as __gaussian_proposal
+from .core import Proposal, NDProposal
 
-from .supernest import gaussian_proposal
-from .supernest import superimpose
+import numpy as np
+
+def superimpose(models: list, nDims: int = None):
+    return __superimpose(models, nDims)
+
+
+superimpose.__doc__ = __superimpose.__doc__
+
+
+def gaussian_proposal(bounds: np.ndarray,
+                      mean: np.ndarray,
+                      stdev: np.ndarray,
+                      loglike: callable = None):
+    return __gaussian_proposal(bounds, mean, stdev, loglike)
+
+
+gaussian_proposal.__doc__ = __gaussian_proposal.__doc__

@@ -10,3 +10,5 @@
 *.egg-info*
 /supernest/Pipfile.lock
 /supernest/.idea/
+/chains/
+/tests/chains/
