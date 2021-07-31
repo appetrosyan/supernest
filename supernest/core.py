@@ -13,8 +13,8 @@ ease and portability.
 from random import random, seed
 from numpy import concatenate, sqrt, log, pi, array, ndarray, zeros, isclose
 from scipy.special import erf, erfinv
-from scipy.stats import truncnorm
 from collections import namedtuple
+import warnings
 
 Proposal = namedtuple("Proposal", ['prior', 'likelihood'])
 NDProposal = namedtuple("NDProposal", ['nDims', 'prior', 'likelihood'])
@@ -51,15 +51,6 @@ def superimpose(models: list, nDims: int = None):
     guard againt changes in the calling conventions and API, just pass
     the nDims that you would pass to PolyChord.Settings, and the
     run_polychord function.
-
-    validate_quantiles=False: bool
-    if nDims is passed, makes sure that the prior
-    quantiles accept points in the entire hypercube.
-
-    validate_likelihood=False: bool
-    if nDims is passed, makes sure that the likelihood
-    functions are well-bevahed in the hypercube.
-    Don't use with slow likelihood functions.
 
 
     Returns
@@ -99,7 +90,7 @@ def superimpose(models: list, nDims: int = None):
         try:
             physical_params = theta[:-len(models)]
         except SystemError:
-            print(f'{theta = } {len(models) =} {theta[:-len(models)]}')
+            warnings.warn(f'{theta = } {theta[:-len(models)]}')
             physical_params = theta[:-len(models)]
         index = int(theta[-1:].item())
         ret = likes[index](physical_params)
@@ -195,6 +186,11 @@ def gaussian_proposal(bounds: ndarray,
         corr = corr.sum()
         return (ll - corr + log_box), phi
 
+    lgl, _ = __correction(__quantile(mean))
+    if not isinstance(lgl, float):
+        raise ValueError('The log-likelihood should return a float.'
+                         + f'Instead returned {lgl}')
+
     return Proposal(__quantile, __correction)
 
 
@@ -203,24 +199,33 @@ def _process_stdev(stdev, mean, bounds):
         stdev = zeros(len(mean)) + stdev
     elif len(mean) != len(stdev):
         raise ValueError(
-            'mean and covariance are of incompatible lengths. {} {}'.format(
-                len(mean), len(stdev)))
+            'Proposal Mean and covariance are of incompatible lengths: ' +
+            f'{len(mean) = } vs. {len(stdev) = }')
     else:
-        try:
-            if len(stdev[0]) != len(mean):
-                raise ValueError(
-                    'Dimensions of stdev and mean don\'t match'
-                    + f'{len(stdev)=} vs {len(mean)=}'
-                )
-        except TypeError:
-            pass
+        if len(stdev[0]) != len(mean):
+            raise ValueError('Dimensions of covariance and mean don\'t match' +
+                             f'{len(stdev)=} vs {len(mean)=}')
 
     try:
         a, b = bounds
     except ValueError:
         a, b = bounds.T
+        warnings.warn('Bounds should be transposed.')
+
+    if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+        pass
+    else:
+        if len(a) != len(b):
+            raise ValueError('Lopsided bounds: ' +
+                             f'{len(a) =} vs. {len(b) =}')
+
+        if 0 != len(a) != len(mean):
+            raise ValueError(
+                'Proposal mean and boundaries are of imcompatible lengths: ' +
+                f'{len(a) =} vs {len(mean) =}')
+
     try:
         stdev = stdev.diagonal()
     except ValueError:
-        pass
+        warnings.warn(f'{stdev = } couldn\'t be diagonalised')
     return stdev, a, b
