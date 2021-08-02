@@ -37,4 +37,8 @@ build:
 test:
   stage: test
   script:
-    - echo "testing" 
+    - pytest "supernest/tests/" --junitxml=report.xml
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
