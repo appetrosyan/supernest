@@ -179,14 +179,6 @@ def gaussian_proposal(bounds: ndarray,
             print(f'{ll= }\t {corr=}')
         return (ll - corr + log_box), phi
 
-    try:
-        lgl, _ = __correction(__quantile(mean))
-    except TypeError:
-        lgl = None
-    if not isinstance(lgl, float):
-        raise ValueError('The log-likelihood should return a float.' +
-                         f'Instead returned {lgl}')
-
     return Proposal(__quantile, __correction)
 
 
@@ -260,10 +252,6 @@ def truncated_gaussian_proposal(bounds: ndarray,
             print(f'{ll= }\t{corr = }\t{log_box=}')
         return (ll - corr + log_box), phi
 
-    lgl, _ = __correction(__quantile(mean))
-    if not isinstance(lgl, float):
-        raise ValueError('The log-likelihood should return a float.' +
-                         f'Instead returned {lgl}')
 
     return Proposal(__quantile, __correction)
 
