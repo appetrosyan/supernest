@@ -11,24 +11,7 @@ to function. If you use this for your research, please consider
 waiting until the full release.
 
 """
-from .core import superimpose as __superimpose
-from .core import gaussian_proposal as __gaussian_proposal
+from .core import superimpose 
+from .core import gaussian_proposal 
+from .core import truncated_gaussian_proposal
 from .core import Proposal, NDProposal
-
-import numpy as np
-
-def superimpose(models: list, nDims: int = None):
-    return __superimpose(models, nDims)
-
-
-superimpose.__doc__ = __superimpose.__doc__
-
-
-def gaussian_proposal(bounds: np.ndarray,
-                      mean: np.ndarray,
-                      stdev: np.ndarray,
-                      loglike: callable = None):
-    return __gaussian_proposal(bounds, mean, stdev, loglike)
-
-
-gaussian_proposal.__doc__ = __gaussian_proposal.__doc__

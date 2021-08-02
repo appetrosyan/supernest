@@ -10,9 +10,10 @@ import mpi4py
 def uniform_with_gaussian_like(nDims, mu, sigma, bounds):
     thetamin = bounds[0]
     thetamax = bounds[1]
+    invCov = np.linalg.inv(sigma)
 
     def ll(theta):
-        return -(theta - mu) @ (theta - mu) / 2 / sigma**2, []
+        return -(theta - mu) @ invCov @ (theta - mu) / 2, []
 
     def up(cube):
         return thetamin + cube * (thetamax - thetamin)
@@ -43,7 +44,7 @@ def test_uniform(nDims, mu, sigma, bounds, nlive):
 def test_proposal(nDims, mu, sigma, bounds, nlive):
     prior, like = uniform_with_gaussian_like(nDims, mu, sigma, bounds)
 
-    pp, ll = supernest.gaussian_proposal(bounds, mu, sigma, loglike=like)
+    pp, ll = supernest.truncated_gaussian_proposal(bounds, mu, sigma, loglike=like)
     settings = normal_run_settings(nDims,
                                    nlive,
                                    file_root="supernest_proposal")
@@ -54,7 +55,7 @@ def test_proposal(nDims, mu, sigma, bounds, nlive):
 def test_supernest(nDims, mu, sigma, bounds, nlive):
     prior, like = uniform_with_gaussian_like(nDims, mu, sigma, bounds)
 
-    pp, ll = supernest.gaussian_proposal(bounds, mu, sigma, loglike=like)
+    pp, ll = supernest.truncated_gaussian_proposal(bounds, mu, sigma, loglike=like)
     dims, ppp, lll = supernest.superimpose([(prior, like), (pp, ll)], nDims)
 
     settings = normal_run_settings(dims,
@@ -76,7 +77,7 @@ def deltas(boundaries, nDims, mu, sigma, nlive):
 
 
 def test_truncated_gaussian(boundaries, nDims, mu, sigma):
-    pp, _ = supernest.gaussian_proposal(boundaries, mu, sigma, bounded=False)
+    pp, _ = supernest.truncated_gaussian_proposal(boundaries, mu, sigma, bounded=False)
     xs = np.linspace(0, 1, 100000)
     ys = np.array([pp(x) for x in xs])
     print(ys)
@@ -95,9 +96,9 @@ def test_truncated_gaussian(boundaries, nDims, mu, sigma):
 def main(a=1):
     global uniform, proposal, delta, x
     nlive = 120
-    nDims = 1
-    mu = np.array([0])
-    sigma = 1.0
+    nDims = 2
+    mu = np.array([0, 1])
+    sigma = np.array([[1, 0], [0, 1]])
     bounds = (np.array([-a]), np.array([a]))
     x = np.linspace(0.001*a, a, 10)
     delta = deltas(x, nDims, mu, sigma, nlive)

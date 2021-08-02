@@ -9,7 +9,7 @@ LONG_DESCRIPTION = SHORT_DESCRIPTION
 with open("./README.md") as readme:
     LONG_DESCRIPTION = readme.read()
 
-version = "2.0.0"
+version = "3.0.0"
 
 if os.environ.get('CI_COMMIT_TAG'):
     version = os.environ['CI_COMMIT_TAG']

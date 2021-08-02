@@ -12,12 +12,17 @@ ease and portability.
 """
 from random import random, seed
 from numpy import concatenate, sqrt, log, pi, array, ndarray, zeros, isclose
+from numpy.linalg import inv as minverse
+from numpy.linalg import slogdet
+import numpy.linalg
 from scipy.special import erf, erfinv
 from collections import namedtuple
 import warnings
 
 Proposal = namedtuple("Proposal", ['prior', 'likelihood'])
 NDProposal = namedtuple("NDProposal", ['nDims', 'prior', 'likelihood'])
+
+debug = False
 
 
 def superimpose(models: list, nDims: int = None):
@@ -122,17 +127,77 @@ def __snap_to_edges(cube, theta, a, b):
 
 def gaussian_proposal(bounds: ndarray,
                       mean: ndarray,
-                      stdev: ndarray,
+                      covmat: ndarray,
                       loglike: callable = None):
-    r"""Produce Gaussian proposal.
+    r"""Produce a Gaussian proposal.
+
+    Given a uniform prior defined by bounds, produces the corrected
+    loglikelihood and prior.
+
+    Parameters
+    ----------
+    bounds: array-like
+        A tuple-like or array-like that contains the (min, max) of the
+        original uniform prior.
+
+    mean: array-like
+        A vector of the means of the gaussian approximation of the proposal
+
+    covmat: array-like
+        A matrix containing the covariance of the gaussian proposal.
+
+    loglike: callable (optional)
+        The loglikelihood function of the original model to be corrected.
+
+    Returns
+    -------
+    proposal: Proposal (tuple(prior, loglike))
+    """
+    covmat, a, b = _process_stdev(covmat, mean, bounds)
+    log_box = log(b - a).sum() if _eitheriter(
+        (a, b)) else len(mean) * log(b - a)
+    log_box = -log_box
+    try:
+        invCov = minverse(covmat)
+    except numpy.linalg.LinAlgError:
+        invCov = 1/covmat
+
+    def __quantile(cube):
+        theta = sqrt(2) * erfinv(2*cube - 1)
+        theta = mean + covmat @ theta
+        return theta
+
+    def __correction(theta):
+        if loglike is None:
+            ll, phi = 0, []
+        else:
+            ll, phi = loglike(theta)
+        corr = - numpy.linalg.multi_dot([(theta - mean), invCov,
+                                         (theta - mean)])/2
+        corr -= log(2 * pi)*len(mean)/2 + slogdet(covmat)[1] / 2
+        if debug:
+            print(f'{ll= }\t {corr=}')
+        return (ll - corr + log_box), phi
+
+    try:
+        lgl, _ = __correction(__quantile(mean))
+    except TypeError:
+        lgl = None
+    if not isinstance(lgl, float):
+        raise ValueError('The log-likelihood should return a float.' +
+                         f'Instead returned {lgl}')
+
+    return Proposal(__quantile, __correction)
+
+
+def truncated_gaussian_proposal(bounds: ndarray,
+                                mean: ndarray,
+                                stdev: ndarray,
+                                loglike: callable = None):
+    r"""Produce a truncated Gaussian proposal.
 
     Given a uniform prior defined by bounds, it produces a gaussian
     prior quantile and a correction to the log-likelihood.
-
-    If the loglike parameter is passed the returned is already a
-    wrapped function (you don't need to wrap it in a callable yourself).
-
-    This should be your first, and perhaps last point of call,
 
     Parameters
     ----------
@@ -162,16 +227,23 @@ def gaussian_proposal(bounds: ndarray,
 
     """
     stdev, a, b = _process_stdev(stdev, mean, bounds)
-    RT2, RTG = sqrt(2), sqrt(1 / 2) / stdev
-    da = erf((a - mean) * RTG)
-    db = erf((b - mean) * RTG)
+    # truncation requires the covmat to be diagonal
+    try:
+        stdev = stdev.diagonal()
+    except ValueError:
+        warnings.warn(f'{stdev = } couldn\'t be diagonalised')
     log_box = log(b - a).sum() if _eitheriter(
         (a, b)) else len(mean) * log(b - a)
     log_box = -log_box
 
+    # Convenice variable to avoid duplicating code
+    RT2, RTG = sqrt(2), sqrt(1 / 2) / stdev
+    da = erf((a - mean) * RTG)
+    db = erf((b - mean) * RTG)
+
     def __quantile(cube):
-        theta = erfinv((1 - cube) * da + cube * db)
-        theta = mean + RT2 * stdev * theta
+        theta = RT2 * erfinv((1 - cube) * da + cube * db)
+        theta = mean + stdev * theta
         theta = __snap_to_edges(cube, theta, a, b)
         return theta
 
@@ -180,16 +252,18 @@ def gaussian_proposal(bounds: ndarray,
             ll, phi = 0, []
         else:
             ll, phi = loglike(theta)
-        corr = -((theta - mean)**2) / (2 * stdev**2)
+        corr = -((theta - mean)**2) / (2 * stdev)
         corr -= log(2 * pi * stdev**2) / 2
         corr -= log((db - da) / 2)
         corr = corr.sum()
+        if debug:
+            print(f'{ll= }\t{corr = }\t{log_box=}')
         return (ll - corr + log_box), phi
 
     lgl, _ = __correction(__quantile(mean))
     if not isinstance(lgl, float):
-        raise ValueError('The log-likelihood should return a float.'
-                         + f'Instead returned {lgl}')
+        raise ValueError('The log-likelihood should return a float.' +
+                         f'Instead returned {lgl}')
 
     return Proposal(__quantile, __correction)
 
@@ -224,8 +298,5 @@ def _process_stdev(stdev, mean, bounds):
                 'Proposal mean and boundaries are of imcompatible lengths: ' +
                 f'{len(a) =} vs {len(mean) =}')
 
-    try:
-        stdev = stdev.diagonal()
-    except ValueError:
-        warnings.warn(f'{stdev = } couldn\'t be diagonalised')
+    
     return stdev, a, b
