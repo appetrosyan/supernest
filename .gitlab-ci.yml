@@ -37,14 +37,4 @@ build:
 test:
   stage: test
   script:
-    - echo "testing"
-
-deploy_to_test_pypi:
-  stage: deploy
-  variables:
-    TWINE_USERNAME: $PRODUCTION_USERNAME
-    TWINE_PASSWORD: $PRODUCTION_PASSWORD
-  script:
-    - pip install twine
-    - twine upload --repository pypi dist/* 
-    
+    - echo "testing" 
