@@ -27,6 +27,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     license='LGPLv3',
     python_requires='>=3.6',
+    test_suite="tests",
     classifiers=[
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)'
     ]
