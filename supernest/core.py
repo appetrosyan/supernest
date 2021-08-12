@@ -115,6 +115,10 @@ def _eitheriter(ab):
 def __snap_to_edges(cube, theta, a, b):
     # TODO use cython for efficient indexing.
     ret = theta
+    if not hasattr(a, '__iter__'):
+        a = a + zeros(len(theta))
+    if not hasattr(b, '__iter__'):
+        b = b + zeros(len(theta))
     for i in range(len(cube)):
         if isclose(cube[i], 0):
             ret[i] = a[i]
@@ -286,5 +290,5 @@ def _process_stdev(stdev, mean, bounds):
                 'Proposal mean and boundaries are of imcompatible lengths: ' +
                 f'{len(a) =} vs {len(mean) =}')
 
-    
+
     return stdev, a, b

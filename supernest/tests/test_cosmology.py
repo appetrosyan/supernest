@@ -1,7 +1,6 @@
 import supernest
 from pypolychord.settings import PolyChordSettings
 from pypolychord import run_polychord
-import scipy.stats as st
 import matplotlib.pyplot as plt
 import numpy as np
 import mpi4py
@@ -57,6 +56,7 @@ def test_proposal(nDims, mu, sigma, bounds, nlive):
 
 def test_supernest(nDims, mu, sigma, bounds, nlive):
     prior, like = uniform_with_gaussian_like(nDims, mu, sigma, bounds)
+
     pp, ll = supernest.truncated_gaussian_proposal(bounds,
                                                    mu,
                                                    sigma,
@@ -84,36 +84,18 @@ def deltas(boundaries, nDims, mu, sigma, nlive):
     return retZ, retZerr
 
 
-def test_truncated_gaussian(boundaries, nDims, mu, sigma):
-    pp, _ = supernest.truncated_gaussian_proposal(boundaries,
-                                                  mu,
-                                                  sigma,
-                                                  bounded=False)
-    xs = np.linspace(0, 1, 100000)
-    ys = np.array([pp(x) for x in xs])
-    print(ys)
-    yys = np.array([
-        st.truncnorm.ppf(x, boundaries[0], boundaries[1], scale=sigma)
-        for x in xs
-    ])
-    plt.figure()
-    plt.hist(yys, alpha=0.8, label='scipy', bins=100)
-    plt.hist(ys, alpha=0.8, label='supernest', bins=100)
-    plt.legend()
-    plt.show()
+def main(nlive=30):
+    global uniform, proposal, x, y
+    mu = np.loadtxt(
+        '/home/app/Git/sspr/supernest/tests/cosmology_data/means.npy')
+    sigma = np.loadtxt(
+        '/home/app/Git/sspr/supernest/tests/cosmology_data/covmat.npy')
+    bounds = np.loadtxt(
+        '/home/app/Git/sspr/supernest/tests/cosmology_data/bounds.npy')
+    bounds = bounds.T
+    x = test_uniform(len(mu), mu, sigma, bounds, nlive)
+    y = test_proposal(len(mu), mu, sigma, bounds, nlive)
 
 
-def main(a=1, it=5):
-    global uniform, proposal, delta, x, deltaerr
-    nlive = 120
-    nDims = 2
-    mu = np.array([0, 1])
-    sigma = np.array([[1, 0], [0, 1]])
-    bounds = (np.array([-a]), np.array([a]))
-    x = np.linspace(0.001 * a, a, it)
-    delta, deltaerr = deltas(x, nDims, mu, sigma, nlive)
-    # test_truncated_gaussian(bounds, nDims, mu, sigma)
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
