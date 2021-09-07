@@ -95,7 +95,7 @@ def superimpose(models: list, nDims: int = None):
         try:
             physical_params = theta[:-len(models)]
         except SystemError:
-            warnings.warn(f'{theta = } {theta[:-len(models)]}')
+            warnings.warn(f'theta = {theta} {theta[:-len(models)]}')
             physical_params = theta[:-len(models)]
         index = int(theta[-1:].item())
         ret = likes[index](physical_params)
@@ -180,7 +180,7 @@ def gaussian_proposal(bounds: ndarray,
                                          (theta - mean)])/2
         corr -= log(2 * pi)*len(mean)/2 + slogdet(covmat)[1] / 2
         if debug:
-            print(f'{ll= }\t {corr=}')
+            print(f'll={ll}\t corr={corr}')
         return (ll - corr + log_box), phi
 
     return Proposal(__quantile, __correction)
@@ -227,7 +227,7 @@ def truncated_gaussian_proposal(bounds: ndarray,
     try:
         stdev = stdev.diagonal()
     except ValueError:
-        warnings.warn(f'{stdev = } couldn\'t be diagonalised')
+        warnings.warn(f'stdev={stdev} couldn\'t be diagonalised')
     log_box = log(b - a).sum() if _eitheriter(
         (a, b)) else len(mean) * log(b - a)
     log_box = -log_box
@@ -253,7 +253,7 @@ def truncated_gaussian_proposal(bounds: ndarray,
         corr -= log((db - da) / 2)
         corr = corr.sum()
         if debug:
-            print(f'{ll= }\t{corr = }\t{log_box=}')
+            print(f'll={ll}\tcorr={corr}\tlog_box={log_box}')
         return (ll - corr + log_box), phi
 
 
@@ -266,11 +266,11 @@ def _process_stdev(stdev, mean, bounds):
     elif len(mean) != len(stdev):
         raise ValueError(
             'Proposal Mean and covariance are of incompatible lengths: ' +
-            f'{len(mean) = } vs. {len(stdev) = }')
+            f'len(mean)={len(mean)} vs. len(stdev)={len(stdev)}')
     else:
         if len(stdev[0]) != len(mean):
             raise ValueError('Dimensions of covariance and mean don\'t match' +
-                             f'{len(stdev)=} vs {len(mean)=}')
+                             f'len(stdev)={len(stdev)} vs len(mean)={len(mean)}')
 
     try:
         a, b = bounds
@@ -283,12 +283,12 @@ def _process_stdev(stdev, mean, bounds):
     else:
         if len(a) != len(b):
             raise ValueError('Lopsided bounds: ' +
-                             f'{len(a) =} vs. {len(b) =}')
+                             f'len(a)={len(a)} vs. len(b)={len(b)}')
 
         if 0 != len(a) != len(mean):
             raise ValueError(
                 'Proposal mean and boundaries are of imcompatible lengths: ' +
-                f'{len(a) =} vs {len(mean) =}')
+                f'len(a)={len(a)} vs len(mean)={len(mean)}')
 
 
     return stdev, a, b
