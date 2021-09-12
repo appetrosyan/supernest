@@ -122,6 +122,7 @@ def __snap_to_edges(cube, theta, a, b):
                 pass
     return ret
 
+
 def __guard_against_inf_nan(cube, theta, logzero, loginf):
     ret = theta
     if not np.all(np.isfinite(ret)):
@@ -134,8 +135,7 @@ def __guard_against_inf_nan(cube, theta, logzero, loginf):
                 ret[i] = logzero
             else:
                 pass
-    else:
-        return ret
+    return ret
 
 
 def gaussian_proposal(bounds: np.ndarray,
