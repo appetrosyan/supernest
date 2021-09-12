@@ -10,10 +10,8 @@ superpositional mixture.  This is done via a functional interface for
 ease and portability.
 
 """
-from random import random, seed
-from numpy import concatenate, sqrt, log, pi, array, ndarray, zeros, isclose
-from numpy.linalg import inv as minverse
-from numpy.linalg import slogdet
+import random
+import numpy as np
 import numpy.linalg
 from scipy.special import erf, erfinv
 from collections import namedtuple
@@ -81,14 +79,14 @@ def superimpose(models: list, nDims: int = None):
         norm = 1 if norm == 0 or len(choice_params) == 1 else norm
         probs = choice_params / norm
         h = hash(tuple(physical_params))
-        seed(h)
-        rand = random()
+        random.seed(h)
+        rand = random.random()
         for p in probs:
             if rand > p:
                 break
             index += 1
         theta = priors[index](physical_params)
-        ret = array(concatenate([theta, probs, [index]]))
+        ret = np.array(np.concatenate([theta, probs, [index]]))
         return ret
 
     def likelihood(theta):
@@ -113,25 +111,37 @@ def _eitheriter(ab):
 
 
 def __snap_to_edges(cube, theta, a, b):
-    # TODO use cython for efficient indexing.
     ret = theta
-    if not hasattr(a, '__iter__'):
-        a = a + zeros(len(theta))
-    if not hasattr(b, '__iter__'):
-        b = b + zeros(len(theta))
-    for i in range(len(cube)):
-        if isclose(cube[i], 0):
-            ret[i] = a[i]
-        elif isclose(cube[i], 1):
-            ret[i] = b[i]
-        else:
-            pass
+    if np.any(np.isclose(cube, 0)) or np.any(np.isclose(cube, 1)):
+        for i in range(len(cube)):
+            if np.isclose(cube[i], 0):
+                ret[i] = a[i] if hasattr(a, '__iter__') else a
+            elif np.isclose(cube[i], 1):
+                ret[i] = b[i] if hasattr(b, '__iter__') else b
+            else:
+                pass
     return ret
 
 
-def gaussian_proposal(bounds: ndarray,
-                      mean: ndarray,
-                      covmat: ndarray,
+def __guard_against_inf_nan(cube, theta, logzero, loginf):
+    ret = theta
+    if not np.all(np.isfinite(ret)):
+        for i in range(len(cube)):
+            if np.isclose(cube[i], 0):
+                ret[i] = logzero
+            elif np.isclose(cube[i], 1):
+                ret[i] = loginf
+            elif not np.isfinite(ret[i]):
+                ret[i] = logzero
+            else:
+                pass
+    else:
+        return ret
+
+
+def gaussian_proposal(bounds: np.ndarray,
+                      mean: np.ndarray,
+                      covmat: np.ndarray,
                       loglike: callable = None):
     r"""Produce a Gaussian proposal.
 
@@ -158,16 +168,16 @@ def gaussian_proposal(bounds: ndarray,
     proposal: Proposal (tuple(prior, loglike))
     """
     covmat, a, b = _process_stdev(covmat, mean, bounds)
-    log_box = log(b - a).sum() if _eitheriter(
-        (a, b)) else len(mean) * log(b - a)
+    log_box = np.log(b - a).sum() if _eitheriter(
+        (a, b)) else len(mean) * np.log(b - a)
     log_box = -log_box
     try:
-        invCov = minverse(covmat)
+        invCov = np.linalg.inv(covmat)
     except numpy.linalg.LinAlgError:
-        invCov = 1/covmat
+        invCov = 1 / covmat
 
     def __quantile(cube):
-        theta = sqrt(2) * erfinv(2*cube - 1)
+        theta = np.sqrt(2) * erfinv(2 * cube - 1)
         theta = mean + covmat @ theta
         return theta
 
@@ -176,9 +186,10 @@ def gaussian_proposal(bounds: ndarray,
             ll, phi = 0, []
         else:
             ll, phi = loglike(theta)
-        corr = - numpy.linalg.multi_dot([(theta - mean), invCov,
-                                         (theta - mean)])/2
-        corr -= log(2 * pi)*len(mean)/2 + slogdet(covmat)[1] / 2
+        corr = -numpy.linalg.multi_dot([(theta - mean), invCov,
+                                        (theta - mean)]) / 2
+        corr -= np.log(
+            2 * np.pi) * len(mean) / 2 + np.linalg.slogdet(covmat)[1] / 2
         if debug:
             print(f'll={ll}\t corr={corr}')
         return (ll - corr + log_box), phi
@@ -186,9 +197,9 @@ def gaussian_proposal(bounds: ndarray,
     return Proposal(__quantile, __correction)
 
 
-def truncated_gaussian_proposal(bounds: ndarray,
-                                mean: ndarray,
-                                stdev: ndarray,
+def truncated_gaussian_proposal(bounds: np.ndarray,
+                                mean: np.ndarray,
+                                stdev: np.ndarray,
                                 loglike: callable = None):
     r"""Produce a truncated Gaussian proposal.
 
@@ -228,12 +239,12 @@ def truncated_gaussian_proposal(bounds: ndarray,
         stdev = stdev.diagonal()
     except ValueError:
         warnings.warn(f'stdev={stdev} couldn\'t be diagonalised')
-    log_box = log(b - a).sum() if _eitheriter(
-        (a, b)) else len(mean) * log(b - a)
+    log_box = np.log(b - a).sum() if _eitheriter(
+        (a, b)) else len(mean) * np.log(b - a)
     log_box = -log_box
 
     # Convenice variable to avoid duplicating code
-    RT2, RTG = sqrt(2), sqrt(1 / 2) / stdev
+    RT2, RTG = np.sqrt(2), np.sqrt(1 / 2) / stdev
     da = erf((a - mean) * RTG)
     db = erf((b - mean) * RTG)
 
@@ -249,28 +260,28 @@ def truncated_gaussian_proposal(bounds: ndarray,
         else:
             ll, phi = loglike(theta)
         corr = -((theta - mean)**2) / (2 * stdev)
-        corr -= log(2 * pi * stdev**2) / 2
-        corr -= log((db - da) / 2)
+        corr -= np.log(2 * np.pi * stdev**2) / 2
+        corr -= np.log((db - da) / 2)
         corr = corr.sum()
         if debug:
             print(f'll={ll}\tcorr={corr}\tlog_box={log_box}')
         return (ll - corr + log_box), phi
-
 
     return Proposal(__quantile, __correction)
 
 
 def _process_stdev(stdev, mean, bounds):
     if isinstance(stdev, float):
-        stdev = zeros(len(mean)) + stdev
+        stdev = np.zeros(len(mean)) + stdev
     elif len(mean) != len(stdev):
         raise ValueError(
             'Proposal Mean and covariance are of incompatible lengths: ' +
             f'len(mean)={len(mean)} vs. len(stdev)={len(stdev)}')
     else:
         if len(stdev[0]) != len(mean):
-            raise ValueError('Dimensions of covariance and mean don\'t match' +
-                             f'len(stdev)={len(stdev)} vs len(mean)={len(mean)}')
+            raise ValueError(
+                'Dimensions of covariance and mean don\'t match' +
+                f'len(stdev)={len(stdev)} vs len(mean)={len(mean)}')
 
     try:
         a, b = bounds
@@ -289,6 +300,5 @@ def _process_stdev(stdev, mean, bounds):
             raise ValueError(
                 'Proposal mean and boundaries are of imcompatible lengths: ' +
                 f'len(a)={len(a)} vs len(mean)={len(mean)}')
-
 
     return stdev, a, b
