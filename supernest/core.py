@@ -122,7 +122,6 @@ def __snap_to_edges(cube, theta, a, b):
                 pass
     return ret
 
-
 def __guard_against_inf_nan(cube, theta, logzero, loginf):
     ret = theta
     if not np.all(np.isfinite(ret)):
@@ -179,7 +178,7 @@ def gaussian_proposal(bounds: np.ndarray,
     def __quantile(cube):
         theta = np.sqrt(2) * erfinv(2 * cube - 1)
         theta = mean + covmat @ theta
-        return theta
+        return __guard_against_inf_nan(cube, theta, -1e30, 1e30)
 
     def __correction(theta):
         if loglike is None:
