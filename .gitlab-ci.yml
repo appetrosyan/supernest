@@ -8,7 +8,7 @@ test:
   stage: test
   script:
     - pip install pytest --quiet
-    - pip install -E . 
+    - pip install -e . 
     - pytest "supernest/tests/" --junitxml=report.xml
   artifacts:
     when: always
