@@ -1,42 +1,14 @@
-image: python:3.6
-include:
-  - template: Code-Quality.gitlab-ci.yml
-
-code_quality:
-  image: docker:stable
-  variables:
-    DOCKER_DRIVER: overlay2
-    SP_VERSION: 0.85.6
-  allow_failure: true
-  services:
-    - docker:stable-dind
-  script:
-    - docker run
-        --env SOURCE_CODE="$PWD"
-        --volume "$PWD":/code
-        --volume /var/run/docker.sock:/var/run/docker.sock
-        "registry.gitlab.com/gitlab-org/ci-cd/codequality:$SP_VERSION" /code
-  artifacts:
-    reports:
-      codequality: gl-code-quality-report.json
+image: "python:3.7"
 
 stages:
-  - build
   - test
-  - deploy
-
-build:
-  stage: build
-  script:
-    - python setup.py sdist bdist_wheel
-  artifacts:
-    paths:
-      - dist/*
 
 
 test:
   stage: test
   script:
+    - pip install pytest --quiet
+    - pip install -e . 
     - pytest "supernest/tests/" --junitxml=report.xml
   artifacts:
     when: always
