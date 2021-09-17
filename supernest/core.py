@@ -1,9 +1,8 @@
-r"""Module containing superimpose and a gaussian proposal.
+r"""Module containing `superimpose` and `gaussian_proposal`s.
 
-The usage is as follows. Normally the proposal is approximated by a
-correlated Gaussian distribution. We (for now) approximate that
-further to a spherically symmetric gaussian and use that as the guide
-for nested sampling.
+Normally the proposal is approximated by a correlated Gaussian
+distribution. We (for now) approximate that further to a spherically
+symmetric gaussian and use that as the guide for nested sampling.
 
 Afterwards, the important step is to put the Gaussian proposal into a
 superpositional mixture.  This is done via a functional interface for
@@ -141,7 +140,8 @@ def __guard_against_inf_nan(cube, theta, logzero, loginf):
 def gaussian_proposal(bounds: np.ndarray,
                       mean: np.ndarray,
                       covmat: np.ndarray,
-                      loglike: callable = None):
+                      loglike: callable = None
+                      logzero: np.float = -1e30):
     r"""Produce a Gaussian proposal.
 
     Given a uniform prior defined by bounds, produces the corrected
@@ -178,19 +178,17 @@ def gaussian_proposal(bounds: np.ndarray,
     def __quantile(cube):
         theta = np.sqrt(2) * erfinv(2 * cube - 1)
         theta = mean + covmat @ theta
-        return __guard_against_inf_nan(cube, theta, -1e30, 1e30)
+        return __guard_against_inf_nan(cube, theta, logzero, 1e30)
 
     def __correction(theta):
-        if loglike is None:
-            ll, phi = 0, []
-        else:
-            ll, phi = loglike(theta)
+        ll, phi = 0, [] if loglike is None else loglike(theta)
+        if np.any(theta < a or theta > b):
+            return logzero, phi
         corr = -numpy.linalg.multi_dot([(theta - mean), invCov,
                                         (theta - mean)]) / 2
         corr -= np.log(
             2 * np.pi) * len(mean) / 2 + np.linalg.slogdet(covmat)[1] / 2
-        if debug:
-            print(f'll={ll}\t corr={corr}')
+
         return (ll - corr + log_box), phi
 
     return Proposal(__quantile, __correction)
