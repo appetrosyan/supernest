@@ -140,7 +140,7 @@ def __guard_against_inf_nan(cube, theta, logzero, loginf):
 def gaussian_proposal(bounds: np.ndarray,
                       mean: np.ndarray,
                       covmat: np.ndarray,
-                      loglike: callable = None
+                      loglike: callable = None,
                       logzero: np.float = -1e30):
     r"""Produce a Gaussian proposal.
 
