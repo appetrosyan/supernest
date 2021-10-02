@@ -106,9 +106,6 @@ def superimpose(models: list, nDims: int = None):
         return Proposal(prior_quantile, likelihood)
 
 
-
-
-
 def gaussian_proposal(bounds: np.ndarray,
                       mean: np.ndarray,
                       covmat: np.ndarray,
