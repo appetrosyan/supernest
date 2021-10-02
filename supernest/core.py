@@ -171,14 +171,11 @@ def gaussian_proposal(bounds: np.ndarray,
     log_box = np.log(b - a).sum() if _eitheriter(
         (a, b)) else len(mean) * np.log(b - a)
     log_box = -log_box
-    try:
-        invCov = np.linalg.inv(covmat)
-    except numpy.linalg.LinAlgError:
-        invCov = 1 / covmat
+    invCov = np.linalg.inv(covmat)
 
     def __quantile(cube):
         theta = np.sqrt(2) * erfinv(2 * cube - 1)
-        theta = mean + covmat @ theta
+        theta = mean + np.linalg.cholesky(covmat) @ theta
         return __guard_against_inf_nan(cube, theta, logzero, 1e30)
 
     def __correction(theta):
@@ -188,8 +185,7 @@ def gaussian_proposal(bounds: np.ndarray,
                 return logzero, phi
             if np.any(theta > b):
                 return logzero, phi
-        corr = -numpy.linalg.multi_dot([(theta - mean), invCov,
-                                        (theta - mean)]) / 2
+        corr = -((theta - mean) @ invCov @ (theta - mean)) / 2.0
         corr -= np.log(
             2 * np.pi) * len(mean) / 2 + np.linalg.slogdet(covmat)[1] / 2
 
@@ -237,7 +233,7 @@ def truncated_gaussian_proposal(bounds: np.ndarray,
     stdev, a, b = _process_stdev(stdev, mean, bounds)
     # truncation requires the covmat to be diagonal
     try:
-        stdev = stdev.diagonal()
+        stdev = np.sqrt(stdev.diagonal())
     except ValueError:
         warnings.warn(f'stdev={stdev} couldn\'t be diagonalised')
     log_box = np.log(b - a).sum() if _eitheriter(
