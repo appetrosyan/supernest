@@ -9,7 +9,7 @@ LONG_DESCRIPTION = SHORT_DESCRIPTION
 with open("./README.md") as readme:
     LONG_DESCRIPTION = readme.read()
 
-version = "3.2.0"
+version = "3.4.0"
 
 if os.environ.get('CI_COMMIT_TAG'):
     version = os.environ['CI_COMMIT_TAG']
@@ -24,6 +24,7 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     url='https://gitlab.com/a-p-petrosyan/sspr',
     install_requires=['anesthetic', 'numpy', 'matplotlib'],
+    tests_require=['pytest', 'hypothesis[numpy]'],
     packages=setuptools.find_packages(),
     license='LGPLv3',
     python_requires='>=3.6',
