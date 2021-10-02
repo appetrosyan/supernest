@@ -11,7 +11,7 @@ to function. If you use this for your research, please consider
 waiting until the full release.
 
 """
-from .core import superimpose 
-from .core import gaussian_proposal 
-from .core import truncated_gaussian_proposal
-from .core import Proposal, NDProposal
+from .core import superimpose
+from .proposals import gaussian_proposal
+from .proposals import truncated_gaussian_proposal
+from .proposals.types import Proposal
