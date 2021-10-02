@@ -8,7 +8,8 @@ test:
   stage: test
   script:
     - pip install pytest --quiet
-    - pip install -e . 
+    - pip install hypothesis[numpy] --quiet
+    - pip install -e .
     - pytest "supernest/tests/" --junitxml=report.xml
   artifacts:
     when: always
