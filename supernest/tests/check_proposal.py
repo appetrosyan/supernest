@@ -4,7 +4,7 @@ try:
     from pypolychord import run_polychord
     import scipy.stats as st
     import matplotlib.pyplot as plt
-    import numpy as np    
+    import numpy as np
     import mpi4py
 
 
@@ -31,7 +31,7 @@ try:
         settings.feedback = 0
         settings.nlive = nlive
         settings.file_root = file_root
-        
+
         return settings
 
 
@@ -64,7 +64,7 @@ try:
                                                        sigma,
                                                        loglike=like)
         dims, ppp, lll = supernest.superimpose([(prior, like), (pp, ll)], nDims)
-        
+
         settings = normal_run_settings(dims,
                                        nlive,
                                        file_root="supernest_superimposed")
@@ -121,6 +121,3 @@ try:
                 main()
 except ImportError:
     pass
-
-
-

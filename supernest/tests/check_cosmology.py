@@ -1,8 +1,11 @@
-import numpy as np
-import supernest as sn
-from pypolychord import run_polychord
-from pypolychord.settings import PolyChordSettings as Settings
-import argparse
+try:
+    import numpy as np
+    import supernest as sn
+    from pypolychord import run_polychord
+    from pypolychord.settings import PolyChordSettings as Settings
+    import argparse
+except ImportError:
+    pass
 
 
 def define_globals():
