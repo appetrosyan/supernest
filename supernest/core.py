@@ -77,6 +77,7 @@ def superimpose(models: list, nDims: int = None):
             if rand > p:
                 break
             index += 1
+
         theta = priors[index](physical_params)
         ret = np.array(np.concatenate([theta, probs, [index]]))
         return ret
