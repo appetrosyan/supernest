@@ -12,3 +12,4 @@
 /supernest/.idea/
 /chains/
 /tests/chains/
+.mypy_cache/
