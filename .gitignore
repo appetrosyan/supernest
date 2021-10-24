@@ -13,3 +13,6 @@
 /chains/
 /tests/chains/
 .mypy_cache/
+supernest/flycheck_core.py
+scratch.py
+Notebooks/chains/
