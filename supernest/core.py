@@ -11,9 +11,7 @@ ease and portability.
 """
 import random
 import numpy as np
-import numpy.linalg
 import warnings
-from supernest.utils import snap_to_edges, process_stdev
 import supernest.proposals as prop
 
 debug = False
@@ -92,4 +90,8 @@ def superimpose(models: list, nDims: int = None):
         ret = likes[index](physical_params)
         return ret
 
-    return prop.Proposal(prior_quantile, likelihood, nDims if nDims is None else nDims + len(models))
+    return prop.Proposal(
+        prior_quantile,
+        likelihood,
+        nDims if nDims is None else nDims + len(models)
+    )
