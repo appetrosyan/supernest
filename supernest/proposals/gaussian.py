@@ -3,6 +3,9 @@ import scipy.special as sp
 import supernest.utils as utils
 from supernest.proposals.types import (Prior, Proposal,
                                        Likelihood, CorrectedLikelihood)
+from functools import lru_cache
+
+macheps = np.nextafter(0, 1)
 
 
 class GaussianPrior(Prior):
@@ -80,3 +83,52 @@ def gaussian_proposal(bounds: np.ndarray,
                     Likelihood(correction) if loglike is None
                     else CorrectedLikelihood(loglike, correction),
                     nDims=len(mean))
+
+
+class PowerPosteriorPrior(Prior):
+    """Implementation of Chen, Ferroz and Hobson's posterior repartitioning."""
+
+    def __init__(self, mean, covmat, **kwargs):
+        """Construct."""
+        self.mean = mean
+        self.covmat = covmat
+        self.logzero = kwargs.get('logzero')
+        self.nDims = kwargs.get('nDims', len(mean))
+        self.beta_max = kwargs.get('beta_max', 1)
+        self.beta_min = kwargs.get('beta_min', macheps)
+        self.bounds = kwargs.get('bounds')
+
+    def power_gaussian_quantile(self, cube, beta=1):
+        """Power Gaussian Quantile evaluation."""
+        sigma = np.diag(self.covmat)
+        da = _erf_term(self.bounds[0] - self.mean, beta, sigma)
+        db = _erf_term(self.bounds[1] - self.mean, beta, sigma)
+        ret = np.erfinv((1 - cube) * da + cube * db)
+        return self.mean + np.sqrt(2/beta) * sigma * ret
+
+    def prior_quantile(self, cube):
+        """Calculate the prior quantile function."""
+        beta = self.beta_min + (self.beta_max - self.beta_min) * cube[-1]
+        theta = self.power_gaussian_quantile(cube=cube[:self.nDims], beta=beta)
+        return np.concatenate([theta, [beta]])
+
+
+def _erf_term(d, b, g):
+    @lru_cache(maxsize=256)
+    def helper(t_delta, t_beta, t_sigma):
+        hd, hg = np.array(t_delta), np.array(t_sigma)
+        return np.erf(hd * np.sqrt(t_beta/2) / hg)
+
+    return helper(tuple(d), b, tuple(g))
+
+
+def power_posterior_proposal(bounds: np.ndarray,
+                             mean: np.ndarray,
+                             covmat: np.ndarray,
+                             nDims,
+                             loglike: callable = None,
+                             logzero: np.float64 = -1e30):
+    """Produce the power posterior proposal."""
+    prior = PowerPosteriorPrior(mean, covmat, logzero, nDims, bounds=bounds)
+
+    return Proposal(prior, loglike, nDims=len(mean)+1)
