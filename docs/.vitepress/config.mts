@@ -5,7 +5,7 @@ export default defineConfig({
   description: "Nested sampling accelerated",
   themeConfig: {
 	nav: [
-	  { text: 'Docs', link: '/api-docs' },
+	  { text: 'Docs', link: '/api/index' },
 	],
 
 	sidebar: [
@@ -15,7 +15,7 @@ export default defineConfig({
 		items: [
 		  {
 			text: 'API Documentation',
-			link: '/api-docs',
+			link: '/api/index',
 			collapsed: false,
 			items: [
 			  {
@@ -26,7 +26,7 @@ export default defineConfig({
 		  },
 		  {
 			text: 'Integrations',
-			link: 'integrations'
+			link: 'integrations/index'
 		  }
 		]
 	  }

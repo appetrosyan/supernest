@@ -9,7 +9,7 @@ hero:
   actions:
     - theme: alt
       text: API Documentation
-      link: /api-docs
+      link: /api/index
 
 features:
   - title: Drop-in
