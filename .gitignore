@@ -24,3 +24,8 @@ Notebooks/chains/
 /sspr-3.4.0.tar.gz
 /sspr-3.4.0.tar.gz.1
 /python-supernest-3.4.0-1-any.pkg.tar.zst
+/Notebooks/.ipynb_checkpoints/
+/bin/
+/lib/
+/lib64
+/pyvenv.cfg
