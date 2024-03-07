@@ -5,21 +5,17 @@ layout: home
 hero:
   name: "Supernest"
   text: "Nested sampling accelerated"
-  tagline: My great project tagline
+  tagline: Supernest accelerates typical nested sampling workflows by including a proposal prior and reducing the Kullback-Leibler divergence.
   actions:
-    - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: API Documentation
+      link: /api-docs
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: Drop-in
+    details: Adding `supernest` is as easy as wrapping your priors.
+  - title: Risk-free
+    details: If your proposal is somehow inadequate, `supernest` falls back onto the original prior and you get your results.
+  - title: Fast
+    details: When the proposal is correct-enough, you can expect the acceleration to be by a factor of hundreds.
 ---
-

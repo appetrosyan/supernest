@@ -29,3 +29,4 @@ Notebooks/chains/
 /lib/
 /lib64
 /pyvenv.cfg
+/docs/.vitepress/cache/
