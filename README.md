@@ -16,7 +16,9 @@
 # SuperNest
 
 A package to perform stochastic superpositional mixing of proposal
-priors for nested sampling engines such as [PolyChord](https://pypi.org/project/pypolychord/) and [Dynesty.](https://pypi.org/project/dynesty/)
+priors for nested sampling engines such as
+[PolyChord](https://pypi.org/project/pypolychord/) and
+[Dynesty.](https://pypi.org/project/dynesty/)
 
 
 <a id="org5c67b97"></a>
@@ -85,10 +87,10 @@ gravitational acceleration on earth, then you should get a quantile
 of a Gaussian for that parameter that is centered around 9.8 and
 has reasonable breadth (but not too wide).
 
-Then as described [here](https://arxiv.org/pdf/1908.04655.pdf), you should make sure that the product of
-the prior probability density function times the likelihood
-function is the same as of the original model everywhere in the
-domain.
+Then as described [here](https://arxiv.org/pdf/1908.04655.pdf), you
+should make sure that the product of the prior probability density
+function times the likelihood function is the same as of the original
+model everywhere in the domain.
 
 To avoid tedious calculations a function that computes a Gaussian
 quantile and a proposal log-likelihood is provided:
@@ -97,7 +99,7 @@ quantile and a proposal log-likelihood is provided:
 
 	proposal_prior, proposal_loglike = gaussian_proposal(
 		bounds=bounds_of_uniform_prior,
-    	mean=means_of_proposal_distribution,
+		mean=means_of_proposal_distribution,
     	stdev=diagonal_elements_of_covariance_matrix,
     	bounded=False,
     	loglike=original_log_like)
@@ -132,52 +134,12 @@ your choosing. For example, `pymultinest`
 	solve(LogLikelihood=super_like, Prior=super_prior, n_dims=super_n_dims,
     	  outputfiles=outputfiles)
 
-
-<a id="orge3fe113"></a>
-
-## The framework
-
-`supernest` comes with a convenient OOP-based wrapper for
-PolyChord. It's feature packed and much more easy to work with as
-you don't need to separately track the number of dimensions of your
-problem.
-
-As of now it only supports PolyChord, as the features don't play
-well with other samplers, e.g. dynamic samplers (`dyPolychord`,
-`dynesty`, `nestorflow`), and samplers that depend highly on the
-smoothness of the prior distribution (`multinest`).
-
-The idea is that you do rapid prototyping using the provided
-parameter covariance templates, and eventually subclass the
-`supernest.framework.polychord.Model`, and run PolyChord as is. Of
-course, this will extend further to a successor to PolyChord that
-uses the idea of superpositional mixtures as a first-class citizen,
-and thus, `supernest` will eventually become a Python front-end for
-that nested sampler.
-
-
-<a id="org9b33408"></a>
-
 # Contributing
 
-I don't like Python, so I don't follow most of the best practices
-(because I think that they exasperate Python's weaknesses). Of
-course if you feel that some things can be made better (i.e. follow
-the aforementioned guidelines and best practices) I will accept a
-Merge request.
-
-The project lives on Gitlab. The Github repository is a (push)
-mirror, hence if you create a pull request, I would prefer if you
-copied the code and pushed to Gitlab.
-
-Why? Well, I'm glad you asked. Gitlab is 100% FOSS, and has no ties
-to an unethical company (yet). They have integrated CI, and a ratehr
-robust system for managing private repositories (up until recently,
-GitHub didn't have that).
+Please read [Contributing.md](./CONTRIBUTING.md).  TL; DR: do not
+worry and ask if in doubt.
 
 
-<a id="orgcef4d1e"></a>
+# License
 
-# License.
-
-GPL v3. and LGPLv3.
+LGPLv3
