@@ -31,3 +31,4 @@ Notebooks/chains/
 /pyvenv.cfg
 /docs/.vitepress/cache/
 /node_modules/
+/docs/.vitepress/dist/
