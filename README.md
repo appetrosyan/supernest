@@ -25,8 +25,9 @@ priors for nested sampling engines such as
 
 # installation
 
-	pip install supernest
-
+```bash
+pip install supernest
+```
 
 <a id="orgf74ac45"></a>
 
@@ -94,16 +95,16 @@ model everywhere in the domain.
 
 To avoid tedious calculations a function that computes a Gaussian
 quantile and a proposal log-likelihood is provided:
+```python
+from supernest import gaussian_proposal
 
-	from supernest import gaussian_proposal
-
-	proposal_prior, proposal_loglike = gaussian_proposal(
-		bounds=bounds_of_uniform_prior,
-		mean=means_of_proposal_distribution,
-    	stdev=diagonal_elements_of_covariance_matrix,
-    	bounded=False,
-    	loglike=original_log_like)
-
+proposal_prior, proposal_loglike = gaussian_proposal(
+	bounds=bounds_of_uniform_prior,
+	mean=means_of_proposal_distribution,
+   	stdev=diagonal_elements_of_covariance_matrix,
+   	bounded=False,
+   	loglike=original_log_like)
+```
 
 <a id="orge7c404c"></a>
 
@@ -120,20 +121,23 @@ superposition of the models that you have.
 The best way to do it, is to use the `supernest.superimpose`
 function.
 
-	from supernest import superimpose
+```python
+from supernest import superimpose
 
-	super_n_dims, super_prior, super_like = superimpose(
-    	[(original_prior, original_log_like), (proposal_prior, proposal_loglike)],
-    	original_n_dims)
+super_n_dims, super_prior, super_like = superimpose(
+    [(original_prior, original_log_like), (proposal_prior, proposal_loglike)],
+    original_n_dims)
+```
 
 After which you can use the functions in any of the samplers of
 your choosing. For example, `pymultinest`
 
-	from pymultinest import solve
+```python
+from pymultinest import solve
 
-	solve(LogLikelihood=super_like, Prior=super_prior, n_dims=super_n_dims,
-    	  outputfiles=outputfiles)
-
+solve(LogLikelihood=super_like, Prior=super_prior, n_dims=super_n_dims,
+   	  outputfiles=outputfiles)
+```
 # Contributing
 
 Please read [Contributing.md](./CONTRIBUTING.md).  TL; DR: do not
