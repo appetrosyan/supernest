@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
+  base: "/supernest/"
   title: "Supernest",
   description: "Nested sampling accelerated",
   themeConfig: {
